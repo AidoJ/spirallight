@@ -188,9 +188,18 @@ async function submitClientIntake(e) {
         console.log('Intake form submitted successfully - client locked to success view');
     } catch (error) {
         console.error('Error submitting intake form:', error);
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+        });
         submitButton.disabled = false;
         submitButton.textContent = originalText;
-        alert('Failed to submit intake form. Please try again. If the problem persists, please contact your therapist.');
+        
+        // Show user-friendly error message
+        const errorMsg = error.message || 'Unknown error occurred';
+        alert(`Failed to submit intake form: ${errorMsg}\n\nPlease try again. If the problem persists, please contact your therapist.`);
     }
 }
 

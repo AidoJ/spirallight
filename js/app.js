@@ -31,6 +31,47 @@ function waitForSupabase(maxAttempts = 10, delay = 100) {
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', async function() {
+    // Check if this is a client intake link FIRST (before any initialization)
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientToken = urlParams.get('client');
+
+    // If it's an intake form link, handle it differently
+    if (clientToken) {
+        console.log('Client intake link detected:', clientToken);
+        
+        // Wait for Supabase library to load
+        try {
+            await waitForSupabase();
+            console.log('Supabase library loaded for intake form');
+        } catch (error) {
+            console.error('Failed to load Supabase library:', error);
+            document.body.innerHTML = `
+                <div style="padding: 3rem; text-align: center; font-family: 'Inter', sans-serif;">
+                    <h1 style="color: var(--danger);">Loading Error</h1>
+                    <p style="color: var(--text-secondary);">Failed to load required resources. Please check your internet connection and refresh.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Initialize Supabase for intake form
+        const initResult = initSupabase();
+        if (!initResult || !supabaseClient) {
+            document.body.innerHTML = `
+                <div style="padding: 3rem; text-align: center; font-family: 'Inter', sans-serif;">
+                    <h1 style="color: var(--danger);">Configuration Error</h1>
+                    <p style="color: var(--text-secondary);">Unable to connect to database. Please contact your therapist.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Show client intake form (skip normal app initialization)
+        await showClientIntakeForm(clientToken);
+        return; // Don't continue with normal app initialization
+    }
+
+    // Normal app initialization (not an intake form link)
     // Wait for Supabase library to load
     try {
         await waitForSupabase();
@@ -85,15 +126,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     console.log('App initialized successfully. Supabase client ready.');
 
-    // Check if this is a client intake link
-    const urlParams = new URLSearchParams(window.location.search);
-    const clientToken = urlParams.get('client');
-
-    if (clientToken) {
-        // Show client intake form (skip normal app initialization)
-        await showClientIntakeForm(clientToken);
-        return; // Don't continue with normal app initialization
-    } else {
+    // Normal app flow
+    {
         // Load clients and set default date
         await loadClients();
         const sessionDate = document.getElementById('sessionDate');

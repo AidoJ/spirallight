@@ -68,18 +68,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.isIntakeFormMode = true;
         window.skipNormalAppInit = true;
         
-        // IMMEDIATELY hide all views and navigation - do this FIRST
+        // IMMEDIATELY hide all views and navigation - do this FIRST with !important
         document.querySelectorAll('.view').forEach(v => {
-            v.classList.remove('active');
-            v.style.display = 'none';
-            v.style.visibility = 'hidden';
+            if (v.id !== 'clientIntakeView') {
+                v.classList.remove('active');
+                v.style.setProperty('display', 'none', 'important');
+                v.style.setProperty('visibility', 'hidden', 'important');
+                v.style.setProperty('opacity', '0', 'important');
+            }
         });
         const nav = document.querySelector('.nav');
         if (nav) {
-            nav.style.display = 'none';
-            nav.style.visibility = 'hidden';
+            nav.style.setProperty('display', 'none', 'important');
+            nav.style.setProperty('visibility', 'hidden', 'important');
         }
-        console.log('All views and nav hidden');
+        console.log('All views and nav hidden with !important');
         
         // Wait for Supabase library to load
         try {

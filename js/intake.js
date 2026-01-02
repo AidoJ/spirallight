@@ -94,16 +94,16 @@ async function showClientIntakeForm(clientId) {
             nav.style.visibility = 'hidden';
         }
         
-        // Show the intake view - force it to be visible with multiple methods
+        // Show the intake view - force it to be visible with !important
         intakeView.classList.add('active');
-        intakeView.style.display = 'block';
-        intakeView.style.visibility = 'visible';
-        intakeView.style.opacity = '1';
-        intakeView.style.position = 'relative';
-        intakeView.style.zIndex = '1000';
-        intakeView.style.height = 'auto';
-        intakeView.style.overflow = 'visible';
-        console.log('Intake view activated and displayed');
+        intakeView.style.setProperty('display', 'block', 'important');
+        intakeView.style.setProperty('visibility', 'visible', 'important');
+        intakeView.style.setProperty('opacity', '1', 'important');
+        intakeView.style.setProperty('position', 'relative', 'important');
+        intakeView.style.setProperty('z-index', '1000', 'important');
+        intakeView.style.setProperty('height', 'auto', 'important');
+        intakeView.style.setProperty('overflow', 'visible', 'important');
+        console.log('Intake view activated and displayed with !important');
         
         // Force it again after delays to override any CSS or other scripts
         setTimeout(() => {

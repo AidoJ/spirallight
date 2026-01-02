@@ -6,6 +6,26 @@
     <title>Spiral Light Healing - Client Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
+    <!-- IMMEDIATE INTAKE FORM DETECTION - Runs before any scripts -->
+    <script>
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clientToken = urlParams.get('client');
+            if (clientToken && clientToken.trim() !== '') {
+                window.isIntakeFormMode = true;
+                window.skipNormalAppInit = true;
+                // Add inline style to hide everything except intake form
+                const style = document.createElement('style');
+                style.textContent = `
+                    .view:not(#clientIntakeView) { display: none !important; visibility: hidden !important; opacity: 0 !important; }
+                    .nav { display: none !important; visibility: hidden !important; }
+                    #clientIntakeView { display: block !important; visibility: visible !important; opacity: 1 !important; }
+                `;
+                document.head.appendChild(style);
+                console.log('INTAKE MODE: Inline styles applied immediately');
+            }
+        })();
+    </script>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Removed inline styles - now in css/styles.css -->

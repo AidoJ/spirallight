@@ -90,10 +90,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const clientToken = urlParams.get('client');
 
     if (clientToken) {
-        // Show client intake form (if implemented)
-        // showClientIntakeForm(clientToken);
-        showToast('Client intake form feature coming soon', 'info');
-        showView('clients');
+        // Show client intake form (skip normal app initialization)
+        await showClientIntakeForm(clientToken);
+        return; // Don't continue with normal app initialization
     } else {
         // Load clients and set default date
         await loadClients();

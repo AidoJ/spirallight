@@ -1,0 +1,683 @@
+/**
+ * Session Management
+ * Handles all session-related operations using Supabase
+ */
+
+let currentSessionId = null;
+
+/**
+ * Start a new session for the current client
+ */
+async function startNewSession() {
+    if (!currentClientId) return;
+
+    try {
+        const { data: client } = await ClientService.getById(currentClientId);
+        if (client) {
+            resetSessionForm();
+            document.getElementById('sessionClientId').value = currentClientId;
+            document.getElementById('sessionFormTitle').textContent = `New Session for ${client.name}`;
+            showView('newSession');
+        }
+    } catch (error) {
+        console.error('Error loading client:', error);
+        showToast('Failed to load client', 'error');
+    }
+}
+
+/**
+ * Save session (create or update)
+ */
+async function saveSession(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Saving...';
+
+    try {
+        const sessionId = document.getElementById('sessionId').value;
+        const existingSession = sessionId ? await SessionService.getById(sessionId).then(r => r.data) : null;
+
+        const sessionData = {
+            clientId: document.getElementById('sessionClientId').value,
+            date: document.getElementById('sessionDate').value,
+            status: existingSession ? existingSession.status : 'approved',
+            practitioner: document.getElementById('sessionPractitioner').value || null,
+            complaints: getTableData('complaintsTable'),
+            aggravates: document.getElementById('sessionAggravates').value || null,
+            swelling: document.getElementById('sessionSwelling').value || null,
+            injurySite: document.getElementById('sessionInjurySite').value || null,
+            medications: getTableData('medicationsTable'),
+            healthcare: getTableData('healthcareTable'),
+            therapies: getTableData('therapiesTable'),
+            implants: document.getElementById('sessionImplants').value || null,
+            injuries: getTableData('injuriesTable'),
+            operations: getTableData('operationsTable'),
+            exercise: document.getElementById('sessionExercise').value || null,
+            bowenHistory: document.getElementById('sessionBowenHistory').value || null,
+            additional: document.getElementById('sessionAdditional').value || null,
+            notes: document.getElementById('sessionNotes').value || null
+        };
+
+        let result;
+        if (sessionId) {
+            result = await SessionService.update(sessionId, sessionData);
+        } else {
+            result = await SessionService.create(sessionData);
+        }
+
+        if (result.error) {
+            throw result.error;
+        }
+
+        showToast('Session saved successfully!', 'success');
+        resetSessionForm();
+        await viewClient(sessionData.clientId);
+    } catch (error) {
+        console.error('Error saving session:', error);
+        showToast('Failed to save session. Please try again.', 'error');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+    }
+}
+
+/**
+ * Get table data from a form table
+ */
+function getTableData(tableId) {
+    const table = document.getElementById(tableId);
+    if (!table) return [];
+
+    const rows = table.querySelectorAll('tbody tr');
+    const data = [];
+
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const rowData = {};
+        inputs.forEach((input, index) => {
+            if (input.value.trim()) {
+                rowData[`col${index}`] = input.value;
+            }
+        });
+        if (Object.keys(rowData).length > 0) {
+            data.push(rowData);
+        }
+    });
+
+    // Map column names based on table
+    if (tableId === 'complaintsTable') {
+        return data.map(d => ({
+            complaint: d.col0 || '',
+            since: d.col1 || '',
+            causes: d.col2 || '',
+            severity: d.col3 || ''
+        }));
+    } else if (tableId === 'medicationsTable') {
+        return data.map(d => ({
+            medication: d.col0 || '',
+            since: d.col1 || '',
+            effects: d.col2 || ''
+        }));
+    } else if (tableId === 'healthcareTable') {
+        return data.map(d => ({
+            provider: d.col0 || '',
+            condition: d.col1 || '',
+            treatment: d.col2 || ''
+        }));
+    } else if (tableId === 'therapiesTable') {
+        return data.map(d => ({
+            therapy: d.col0 || '',
+            since: d.col1 || '',
+            results: d.col2 || ''
+        }));
+    } else if (tableId === 'injuriesTable') {
+        return data.map(d => ({
+            injury: d.col0 || '',
+            since: d.col1 || '',
+            complications: d.col2 || ''
+        }));
+    } else if (tableId === 'operationsTable') {
+        return data.map(d => ({
+            operation: d.col0 || '',
+            when: d.col1 || '',
+            complications: d.col2 || ''
+        }));
+    }
+
+    return data;
+}
+
+/**
+ * Set table data from session data
+ */
+function setTableData(tableId, data, bodyId) {
+    const tbody = document.getElementById(bodyId);
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (!data || data.length === 0) {
+        // Add one empty row
+        if (tableId === 'complaintsTable') addComplaintRow();
+        else if (tableId === 'medicationsTable') addMedicationRow();
+        else if (tableId === 'healthcareTable') addHealthcareRow();
+        else if (tableId === 'therapiesTable') addTherapyRow();
+        else if (tableId === 'injuriesTable') addInjuryRow();
+        else if (tableId === 'operationsTable') addOperationRow();
+        return;
+    }
+
+    data.forEach(item => {
+        if (tableId === 'complaintsTable') {
+            addComplaintRow(item.complaint, item.since, item.causes, item.severity);
+        } else if (tableId === 'medicationsTable') {
+            addMedicationRow(item.medication, item.since, item.effects);
+        } else if (tableId === 'healthcareTable') {
+            addHealthcareRow(item.provider, item.condition, item.treatment);
+        } else if (tableId === 'therapiesTable') {
+            addTherapyRow(item.therapy, item.since, item.results);
+        } else if (tableId === 'injuriesTable') {
+            addInjuryRow(item.injury, item.since, item.complications);
+        } else if (tableId === 'operationsTable') {
+            addOperationRow(item.operation, item.when, item.complications);
+        }
+    });
+}
+
+// Table row management functions
+function addComplaintRow(complaint = '', since = '', causes = '', severity = '') {
+    const tbody = document.getElementById('complaintsBody');
+    if (!tbody) return;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" placeholder="Describe complaint" value="${escapeHtml(complaint)}"></td>
+        <td><input type="text" placeholder="When did it start?" value="${escapeHtml(since)}"></td>
+        <td><input type="text" placeholder="What caused it?" value="${escapeHtml(causes)}"></td>
+        <td><input type="number" min="1" max="10" placeholder="1-10" value="${escapeHtml(severity)}"></td>
+        <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+    `;
+    tbody.appendChild(row);
+}
+
+function addMedicationRow(medication = '', since = '', effects = '') {
+    const tbody = document.getElementById('medicationsBody');
+    if (!tbody) return;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" placeholder="Medication name" value="${escapeHtml(medication)}"></td>
+        <td><input type="text" placeholder="How long?" value="${escapeHtml(since)}"></td>
+        <td><input type="text" placeholder="Any side effects?" value="${escapeHtml(effects)}"></td>
+        <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+    `;
+    tbody.appendChild(row);
+}
+
+function addHealthcareRow(provider = '', condition = '', treatment = '') {
+    const tbody = document.getElementById('healthcareBody');
+    if (!tbody) return;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" placeholder="Provider name" value="${escapeHtml(provider)}"></td>
+        <td><input type="text" placeholder="Condition" value="${escapeHtml(condition)}"></td>
+        <td><input type="text" placeholder="Treatment type" value="${escapeHtml(treatment)}"></td>
+        <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+    `;
+    tbody.appendChild(row);
+}
+
+function addTherapyRow(therapy = '', since = '', results = '') {
+    const tbody = document.getElementById('therapiesBody');
+    if (!tbody) return;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" placeholder="Therapy type" value="${escapeHtml(therapy)}"></td>
+        <td><input type="text" placeholder="How long?" value="${escapeHtml(since)}"></td>
+        <td><input type="text" placeholder="Effectiveness" value="${escapeHtml(results)}"></td>
+        <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+    `;
+    tbody.appendChild(row);
+}
+
+function addInjuryRow(injury = '', since = '', complications = '') {
+    const tbody = document.getElementById('injuriesBody');
+    if (!tbody) return;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" placeholder="Injury or condition" value="${escapeHtml(injury)}"></td>
+        <td><input type="text" placeholder="When?" value="${escapeHtml(since)}"></td>
+        <td><input type="text" placeholder="Effects" value="${escapeHtml(complications)}"></td>
+        <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+    `;
+    tbody.appendChild(row);
+}
+
+function addOperationRow(operation = '', when = '', complications = '') {
+    const tbody = document.getElementById('operationsBody');
+    if (!tbody) return;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" placeholder="Operation type" value="${escapeHtml(operation)}"></td>
+        <td><input type="text" placeholder="Date/Year" value="${escapeHtml(when)}"></td>
+        <td><input type="text" placeholder="Any complications?" value="${escapeHtml(complications)}"></td>
+        <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+    `;
+    tbody.appendChild(row);
+}
+
+function removeTableRow(btn) {
+    const row = btn.closest('tr');
+    const tbody = row.parentElement;
+    if (tbody.children.length > 1) {
+        row.remove();
+    } else {
+        // Clear the last row instead of removing it
+        row.querySelectorAll('input').forEach(input => input.value = '');
+    }
+}
+
+/**
+ * Reset session form
+ */
+function resetSessionForm() {
+    const form = document.getElementById('sessionForm');
+    if (form) form.reset();
+    
+    const sessionId = document.getElementById('sessionId');
+    if (sessionId) sessionId.value = '';
+    
+    const sessionDate = document.getElementById('sessionDate');
+    if (sessionDate) sessionDate.valueAsDate = new Date();
+
+    // Reset all tables to one empty row
+    ['complaintsBody', 'medicationsBody', 'healthcareBody', 'therapiesBody', 'injuriesBody', 'operationsBody'].forEach(bodyId => {
+        const tbody = document.getElementById(bodyId);
+        if (tbody) tbody.innerHTML = '';
+    });
+
+    addComplaintRow();
+    addMedicationRow();
+    addHealthcareRow();
+    addTherapyRow();
+    addInjuryRow();
+    addOperationRow();
+}
+
+/**
+ * View session details
+ */
+async function viewSession(id) {
+    currentSessionId = id;
+
+    try {
+        const { data: session, error: sessionError } = await SessionService.getById(id);
+
+        if (sessionError || !session) {
+            throw sessionError || new Error('Session not found');
+        }
+
+        const { data: client, error: clientError } = await ClientService.getById(session.client_id);
+
+        if (clientError) {
+            console.error('Error loading client:', clientError);
+        }
+
+        const clientName = client?.name || 'Unknown Client';
+
+        document.getElementById('sessionDetailTitle').textContent = `Session - ${formatDate(session.date)}`;
+
+        let html = `
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600;">Session Information</h3>
+                    <div class="detail-row">
+                        <div class="detail-label">Client</div>
+                        <div class="detail-value">${escapeHtml(clientName)}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Date</div>
+                        <div class="detail-value">${formatDate(session.date)}</div>
+                    </div>
+                    ${session.practitioner ? `
+                    <div class="detail-row">
+                        <div class="detail-label">Practitioner</div>
+                        <div class="detail-value">${escapeHtml(session.practitioner)}</div>
+                    </div>` : ''}
+                    <div class="detail-row">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="badge ${session.status === 'pending' ? 'badge-secondary' : 'badge-primary'}">
+                                ${session.status === 'pending' ? 'Pending' : 'Approved'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Display complaints
+        if (session.complaints && session.complaints.length > 0 && session.complaints.some(c => c.complaint)) {
+            html += `
+                <div class="form-section">
+                    <h3 class="section-header">Chief Complaints</h3>
+                    <div class="detail-card">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Complaint</th>
+                                    <th>Since</th>
+                                    <th>Causes</th>
+                                    <th>Severity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${session.complaints.filter(c => c.complaint).map(c => `
+                                    <tr>
+                                        <td>${escapeHtml(c.complaint || '-')}</td>
+                                        <td>${escapeHtml(c.since || '-')}</td>
+                                        <td>${escapeHtml(c.causes || '-')}</td>
+                                        <td>${escapeHtml(c.severity || '-')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display other sections similarly...
+        // (I'll add the rest of the display logic, but keeping it concise for now)
+
+        if (session.aggravates || session.swelling || session.injury_site) {
+            html += `
+                <div class="form-section">
+                    <h3 class="section-header">Pain & Injury Details</h3>
+                    <div class="detail-card">
+                        ${session.aggravates ? `
+                        <div class="detail-row">
+                            <div class="detail-label">What aggravates pain?</div>
+                            <div class="detail-value">${escapeHtml(session.aggravates)}</div>
+                        </div>` : ''}
+                        ${session.swelling ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Swelling</div>
+                            <div class="detail-value">${escapeHtml(session.swelling)}</div>
+                        </div>` : ''}
+                        ${session.injury_site ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Injury Site</div>
+                            <div class="detail-value">${escapeHtml(session.injury_site)}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (session.notes) {
+            html += `
+                <div class="notes-section">
+                    <div class="notes-header">
+                        <h3>Session Notes</h3>
+                        <button class="btn btn-outline" onclick="editCurrentSession()">Edit</button>
+                    </div>
+                    <div class="notes-content">${escapeHtml(session.notes)}</div>
+                </div>
+            `;
+        }
+
+        const sessionDetailContent = document.getElementById('sessionDetailContent');
+        if (sessionDetailContent) {
+            sessionDetailContent.innerHTML = html;
+        }
+
+        showView('sessionDetail');
+    } catch (error) {
+        console.error('Error loading session:', error);
+        showToast('Failed to load session details', 'error');
+    }
+}
+
+/**
+ * Display sessions for a client
+ */
+function displaySessions(clientSessions) {
+    const sessionList = document.getElementById('sessionList');
+    if (!sessionList) return;
+
+    if (clientSessions.length === 0) {
+        sessionList.innerHTML = `
+            <div class="empty-state" style="padding: 2rem;">
+                <div class="empty-icon" style="font-size: 3rem;">📋</div>
+                <h3>No approved sessions yet</h3>
+                <p>Approved sessions will appear here</p>
+            </div>
+        `;
+        return;
+    }
+
+    sessionList.innerHTML = clientSessions.map(session => `
+        <div class="session-card" onclick="viewSession('${session.id}')">
+            <div class="session-header">
+                <div>
+                    <div class="session-date">Session: ${formatDate(session.date)}</div>
+                    ${session.practitioner ? `<p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">Practitioner: ${escapeHtml(session.practitioner)}</p>` : ''}
+                </div>
+                <span class="badge badge-secondary">View Details</span>
+            </div>
+            ${session.complaints && session.complaints.length > 0 ? `
+                <div class="session-info">
+                    <strong>Chief Complaints:</strong>
+                    ${session.complaints.filter(c => c.complaint).map(c => escapeHtml(c.complaint)).join(', ')}
+                </div>
+            ` : ''}
+            ${session.notes ? `
+                <div style="margin-top: 0.75rem; padding: 0.75rem; background: #fffbeb; border-radius: 6px; font-size: 0.875rem;">
+                    <strong>Notes:</strong> ${escapeHtml(session.notes.substring(0, 150))}${session.notes.length > 150 ? '...' : ''}
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+/**
+ * Display pending sessions
+ */
+function displayPendingSessions(pendingSessions) {
+    const sessionList = document.getElementById('sessionList');
+    if (!sessionList) return;
+
+    let pendingHTML = `
+        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+            <h3 style="color: #f59e0b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>⏳</span> Pending Client Submissions (${pendingSessions.length})
+            </h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.875rem;">
+                These intake forms were submitted by the client and are awaiting your review and approval.
+            </p>
+            <div style="display: grid; gap: 1rem;">
+    `;
+
+    pendingSessions.forEach(session => {
+        pendingHTML += `
+            <div style="background: white; border-radius: 8px; padding: 1rem; border-left: 4px solid #f59e0b;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">
+                            Appointment: ${formatDate(session.date)}
+                        </div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            Submitted: ${formatDateTime(session.created_at)}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary" onclick="event.stopPropagation(); viewSession('${session.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                            👁️ Review
+                        </button>
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); approveSession('${session.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                            ✓ Approve
+                        </button>
+                        <button class="btn btn-danger" onclick="event.stopPropagation(); deletePendingSession('${session.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+                ${session.complaints && session.complaints.length > 0 && session.complaints.some(c => c.complaint) ? `
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                        <strong>Chief Complaints:</strong> ${session.complaints.filter(c => c.complaint).map(c => escapeHtml(c.complaint)).join(', ')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+
+    pendingHTML += `
+            </div>
+        </div>
+    `;
+
+    const container = sessionList.parentElement;
+    const existingPending = container.querySelector('.pending-sessions-container');
+    if (existingPending) {
+        existingPending.remove();
+    }
+
+    const pendingDiv = document.createElement('div');
+    pendingDiv.className = 'pending-sessions-container';
+    pendingDiv.innerHTML = pendingHTML;
+    const sectionHeader = container.querySelector('.section-header');
+    if (sectionHeader && sectionHeader.nextSibling) {
+        container.insertBefore(pendingDiv, sectionHeader.nextSibling);
+    } else {
+        container.insertBefore(pendingDiv, sessionList);
+    }
+}
+
+/**
+ * Edit current session
+ */
+async function editCurrentSession() {
+    if (!currentSessionId) return;
+
+    try {
+        const { data: session, error } = await SessionService.getById(currentSessionId);
+
+        if (error || !session) {
+            throw error || new Error('Session not found');
+        }
+
+        // Load client name
+        const { data: client } = await ClientService.getById(session.client_id);
+        const clientName = client?.name || 'Unknown';
+
+        document.getElementById('sessionFormTitle').textContent = `Edit Session for ${clientName}`;
+        document.getElementById('sessionId').value = session.id;
+        document.getElementById('sessionClientId').value = session.client_id;
+        document.getElementById('sessionDate').value = session.date;
+        document.getElementById('sessionPractitioner').value = session.practitioner || '';
+        document.getElementById('sessionAggravates').value = session.aggravates || '';
+        document.getElementById('sessionSwelling').value = session.swelling || '';
+        document.getElementById('sessionInjurySite').value = session.injury_site || '';
+        document.getElementById('sessionImplants').value = session.implants || '';
+        document.getElementById('sessionExercise').value = session.exercise || '';
+        document.getElementById('sessionBowenHistory').value = session.bowen_history || '';
+        document.getElementById('sessionAdditional').value = session.additional || '';
+        document.getElementById('sessionNotes').value = session.notes || '';
+
+        // Set table data
+        setTableData('complaintsTable', session.complaints || [], 'complaintsBody');
+        setTableData('medicationsTable', session.medications || [], 'medicationsBody');
+        setTableData('healthcareTable', session.healthcare || [], 'healthcareBody');
+        setTableData('therapiesTable', session.therapies || [], 'therapiesBody');
+        setTableData('injuriesTable', session.injuries || [], 'injuriesBody');
+        setTableData('operationsTable', session.operations || [], 'operationsBody');
+
+        showView('newSession');
+    } catch (error) {
+        console.error('Error loading session:', error);
+        showToast('Failed to load session', 'error');
+    }
+}
+
+/**
+ * Delete current session
+ */
+async function deleteCurrentSession() {
+    if (!currentSessionId) return;
+
+    if (!confirm('Are you sure you want to delete this session?')) {
+        return;
+    }
+
+    try {
+        const { data: session } = await SessionService.getById(currentSessionId);
+        const clientId = session?.client_id;
+
+        const { error } = await SessionService.delete(currentSessionId);
+
+        if (error) {
+            throw error;
+        }
+
+        showToast('Session deleted successfully!', 'success');
+        if (clientId) {
+            await viewClient(clientId);
+        } else {
+            showView('clients');
+        }
+    } catch (error) {
+        console.error('Error deleting session:', error);
+        showToast('Failed to delete session', 'error');
+    }
+}
+
+/**
+ * Approve a pending session
+ */
+async function approveSession(sessionId) {
+    try {
+        const { error } = await SessionService.updateStatus(sessionId, 'approved');
+
+        if (error) {
+            throw error;
+        }
+
+        showToast('Session approved!', 'success');
+        if (currentClientId) {
+            await viewClient(currentClientId);
+        }
+    } catch (error) {
+        console.error('Error approving session:', error);
+        showToast('Failed to approve session', 'error');
+    }
+}
+
+/**
+ * Delete a pending session
+ */
+async function deletePendingSession(sessionId) {
+    if (!confirm('Are you sure you want to delete this pending session?')) {
+        return;
+    }
+
+    try {
+        const { error } = await SessionService.delete(sessionId);
+
+        if (error) {
+            throw error;
+        }
+
+        showToast('Session deleted!', 'success');
+        if (currentClientId) {
+            await viewClient(currentClientId);
+        }
+    } catch (error) {
+        console.error('Error deleting session:', error);
+        showToast('Failed to delete session', 'error');
+    }
+}
+

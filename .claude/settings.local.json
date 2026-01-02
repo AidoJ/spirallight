@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: Spiral Light Healing Client Management System\n\n- Modern, responsive client intake and session management app\n- Client profile management with contact and personal info\n- Comprehensive Bowen therapy intake forms per session\n- Therapist notes functionality for each session\n- Session history tracking per client\n- Beautiful teal \\(#00AABB\\) color scheme\n- Mobile-responsive design\n- localStorage for data persistence\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)"
     ]
   }
 }

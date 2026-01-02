@@ -320,17 +320,16 @@ async function viewClient(id) {
         }
 
         const sessions = allSessions || [];
-        console.log('All sessions loaded:', sessions.length);
-        console.log('Session statuses:', sessions.map(s => ({ id: s.id, status: s.status, date: s.date })));
         
-        // Filter pending sessions - check both 'pending' status and null status (for backwards compatibility)
-        const pendingSessions = sessions.filter(s => s.status === 'pending' || s.status === null)
-            .sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
-        const approvedSessions = sessions.filter(s => s.status !== 'pending' && s.status !== null)
+        // Filter pending sessions (submitted by clients, awaiting therapist approval)
+        const pendingSessions = sessions.filter(s => s.status === 'pending')
             .sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
         
-        console.log('Pending sessions:', pendingSessions.length);
-        console.log('Approved sessions:', approvedSessions.length);
+        // Filter approved sessions (approved by therapist or created by therapist)
+        const approvedSessions = sessions.filter(s => s.status === 'approved' || !s.status)
+            .sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
+        
+        console.log(`Client ${client.name}: ${pendingSessions.length} pending, ${approvedSessions.length} approved sessions`);
 
         document.getElementById('clientDetailName').textContent = client.name;
 

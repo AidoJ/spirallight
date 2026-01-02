@@ -1,10 +1,12 @@
 /**
  * Client Intake Form
  * Handles the public-facing client intake form
+ * SECURITY: Clients should ONLY see the intake form, nothing else
  */
 
 /**
  * Show client intake form
+ * This is called when ?client=<id> is in the URL
  */
 async function showClientIntakeForm(clientId) {
     try {
@@ -13,7 +15,7 @@ async function showClientIntakeForm(clientId) {
 
         if (error || !client) {
             document.body.innerHTML = `
-                <div style="padding: 3rem; text-align: center; font-family: 'Inter', sans-serif;">
+                <div style="padding: 3rem; text-align: center; font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto;">
                     <h1 style="color: var(--danger); margin-bottom: 1rem;">Invalid Link</h1>
                     <p style="color: var(--text-secondary);">This intake form link is not valid or has expired.</p>
                     <p style="color: var(--text-secondary); margin-top: 0.5rem;">Please contact your therapist for a new link.</p>
@@ -22,122 +24,44 @@ async function showClientIntakeForm(clientId) {
             return;
         }
 
-        console.log('Showing intake form for client:', clientId);
+        console.log('Showing intake form for client:', client.name);
         
-        // Hide all other views and show intake form
-        document.querySelectorAll('.view').forEach(v => {
-            v.classList.remove('active');
-            console.log('Removed active from view:', v.id);
-        });
-        document.querySelectorAll('.nav-tab').forEach(t => {
-            t.classList.remove('active');
-            t.style.display = 'none'; // Hide all nav tabs
-        });
-        
-        // Hide navigation completely - MULTIPLE SELECTORS
+        // SECURITY: Completely hide navigation and all other views
         const nav = document.querySelector('.nav');
         if (nav) {
-            nav.style.display = 'none';
-            nav.style.visibility = 'hidden';
-            nav.style.opacity = '0';
-            nav.style.height = '0';
-            nav.style.overflow = 'hidden';
-            console.log('Navigation hidden');
-        }
-        // Also hide nav-content directly
-        const navContent = document.querySelector('.nav-content');
-        if (navContent) {
-            navContent.style.display = 'none';
-            navContent.style.visibility = 'hidden';
+            nav.style.setProperty('display', 'none', 'important');
+            nav.style.setProperty('visibility', 'hidden', 'important');
         }
         
-        // Keep header but customize it
-        const header = document.querySelector('.header');
-        if (header) {
-            const logoH1 = header.querySelector('.logo h1');
-            const logoP = header.querySelector('.logo p');
-            if (logoH1) logoH1.textContent = 'Spiral Light Healing';
-            if (logoP) logoP.textContent = 'Client Intake Form';
-            console.log('Header customized');
-        }
-
+        // Hide ALL views except intake view
+        document.querySelectorAll('.view').forEach(v => {
+            if (v.id !== 'clientIntakeView') {
+                v.style.setProperty('display', 'none', 'important');
+                v.style.setProperty('visibility', 'hidden', 'important');
+                v.classList.remove('active');
+            }
+        });
+        
+        // Show intake view
         const intakeView = document.getElementById('clientIntakeView');
-        console.log('Intake view element:', intakeView);
-        
         if (!intakeView) {
-            console.error('clientIntakeView element not found!');
             document.body.innerHTML = `
                 <div style="padding: 3rem; text-align: center; font-family: 'Inter', sans-serif;">
                     <h1 style="color: var(--danger); margin-bottom: 1rem;">Error</h1>
-                    <p style="color: var(--text-secondary);">Intake form view not found. Please contact support.</p>
+                    <p style="color: var(--text-secondary);">Intake form view not found.</p>
                 </div>
             `;
             return;
         }
-
-        // NUCLEAR OPTION: Force hide ALL other views and navigation
-        document.querySelectorAll('.view').forEach(v => {
-            if (v.id !== 'clientIntakeView') {
-                v.classList.remove('active');
-                v.style.display = 'none';
-                v.style.visibility = 'hidden';
-                v.style.opacity = '0';
-                v.style.height = '0';
-                v.style.overflow = 'hidden';
-            }
-        });
         
-        // Hide navigation completely
-        const nav = document.querySelector('.nav');
-        if (nav) {
-            nav.style.display = 'none';
-            nav.style.visibility = 'hidden';
-        }
-        
-        // Show the intake view - force it to be visible with !important
         intakeView.classList.add('active');
         intakeView.style.setProperty('display', 'block', 'important');
         intakeView.style.setProperty('visibility', 'visible', 'important');
-        intakeView.style.setProperty('opacity', '1', 'important');
-        intakeView.style.setProperty('position', 'relative', 'important');
-        intakeView.style.setProperty('z-index', '1000', 'important');
-        intakeView.style.setProperty('height', 'auto', 'important');
-        intakeView.style.setProperty('overflow', 'visible', 'important');
-        console.log('Intake view activated and displayed with !important');
         
-        // Force it again after delays to override any CSS or other scripts
-        setTimeout(() => {
-            // Hide everything except intake view
-            document.querySelectorAll('.view').forEach(v => {
-                if (v.id !== 'clientIntakeView') {
-                    v.style.display = 'none';
-                    v.style.visibility = 'hidden';
-                }
-            });
-            // Show intake view
-            intakeView.classList.add('active');
-            intakeView.style.display = 'block';
-            intakeView.style.visibility = 'visible';
-            console.log('Intake view forced visible again (50ms)');
-        }, 50);
-        
-        setTimeout(() => {
-            // Final check and force
-            document.querySelectorAll('.view').forEach(v => {
-                if (v.id !== 'clientIntakeView') {
-                    v.style.display = 'none';
-                }
-            });
-            intakeView.style.display = 'block';
-            console.log('Intake view forced visible again (200ms)');
-        }, 200);
-        
+        // Set client ID
         const intakeClientIdInput = document.getElementById('intakeClientId');
         if (intakeClientIdInput) {
             intakeClientIdInput.value = clientId;
-            console.log('Client ID set:', clientId);
-        } else {
-            console.error('intakeClientId input not found!');
         }
         
         // Set today's date as minimum and default
@@ -146,14 +70,18 @@ async function showClientIntakeForm(clientId) {
         if (sessionDateInput) {
             sessionDateInput.setAttribute('min', today);
             sessionDateInput.value = today;
-            console.log('Session date set to:', today);
-        } else {
-            console.error('intakeSessionDate input not found!');
         }
 
-        // Initialize intake form tables with one empty row each
+        // Initialize intake form tables
         resetIntakeForm();
-        console.log('Intake form reset and ready');
+        
+        // Show form, hide success message
+        const form = document.getElementById('clientIntakeForm');
+        const successMsg = document.getElementById('intakeSuccessMessage');
+        if (form) form.style.display = 'block';
+        if (successMsg) successMsg.style.display = 'none';
+        
+        console.log('Intake form ready for client:', client.name);
     } catch (error) {
         console.error('Error loading intake form:', error);
         document.body.innerHTML = `
@@ -167,6 +95,7 @@ async function showClientIntakeForm(clientId) {
 
 /**
  * Submit client intake form
+ * SECURITY: After submission, client is locked to success view only
  */
 async function submitClientIntake(e) {
     e.preventDefault();
@@ -181,10 +110,11 @@ async function submitClientIntake(e) {
     try {
         const clientId = document.getElementById('intakeClientId').value;
 
+        // Collect all form data
         const sessionData = {
             clientId: clientId,
             date: document.getElementById('intakeSessionDate').value,
-            status: 'pending', // Client submissions are pending until approved
+            status: 'pending', // Client submissions are pending until therapist approves
             practitioner: null,
             complaints: getIntakeTableData('intakeComplaintsTable'),
             aggravates: document.getElementById('intakeAggravates').value || null,
@@ -202,31 +132,31 @@ async function submitClientIntake(e) {
             notes: null
         };
 
+        // Save to database
         const result = await SessionService.create(sessionData);
 
         if (result.error) {
             throw result.error;
         }
 
-        // Hide form and show success message
-        const form = document.getElementById('clientIntakeForm');
+        // SECURITY: Hide form and show success message
+        const formElement = document.getElementById('clientIntakeForm');
         const successMsg = document.getElementById('intakeSuccessMessage');
         
-        if (form) {
-            form.style.display = 'none';
-            form.style.visibility = 'hidden';
+        if (formElement) {
+            formElement.style.setProperty('display', 'none', 'important');
         }
         
         if (successMsg) {
-            successMsg.style.display = 'block';
-            successMsg.style.visibility = 'visible';
+            successMsg.style.setProperty('display', 'block', 'important');
         }
         
-        // CRITICAL: Keep intake mode active and hide ALL other views
+        // CRITICAL: Lock client to intake mode - prevent any access to therapist app
         window.isIntakeFormMode = true;
         window.skipNormalAppInit = true;
+        window.intakeSubmitted = true; // Mark as submitted
         
-        // Force hide all other views and navigation
+        // Force hide ALL other views and navigation permanently
         document.querySelectorAll('.view').forEach(v => {
             if (v.id !== 'clientIntakeView') {
                 v.style.setProperty('display', 'none', 'important');
@@ -240,7 +170,7 @@ async function submitClientIntake(e) {
             nav.style.setProperty('visibility', 'hidden', 'important');
         }
         
-        // Ensure intake view stays visible
+        // Ensure intake view stays visible (showing success message)
         const intakeView = document.getElementById('clientIntakeView');
         if (intakeView) {
             intakeView.style.setProperty('display', 'block', 'important');
@@ -279,7 +209,7 @@ function getIntakeTableData(tableId) {
         }
     });
 
-    // Map column names based on table
+    // Map column names based on table type
     if (tableId === 'intakeComplaintsTable') {
         return data.map(d => ({
             complaint: d.col0 || '',
@@ -323,7 +253,7 @@ function getIntakeTableData(tableId) {
 }
 
 /**
- * Reset intake form
+ * Reset intake form to initial state
  */
 function resetIntakeForm() {
     // Reset all tables to one empty row
@@ -434,4 +364,3 @@ function removeIntakeTableRow(btn) {
         row.querySelectorAll('input').forEach(input => input.value = '');
     }
 }
-

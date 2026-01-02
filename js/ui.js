@@ -114,8 +114,9 @@ function getInitials(name) {
  * View Management
  */
 function showView(viewName) {
-    // Don't allow view changes if we're in intake form mode
-    if (window.isIntakeFormMode) {
+    // SECURITY: Don't allow view changes if we're in intake form mode
+    // This prevents clients from accessing the therapist app
+    if (window.isIntakeFormMode || window.intakeSubmitted) {
         console.log('View change blocked - intake form mode active');
         return;
     }

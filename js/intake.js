@@ -34,11 +34,21 @@ async function showClientIntakeForm(clientId) {
             t.style.display = 'none'; // Hide all nav tabs
         });
         
-        // Hide navigation completely
+        // Hide navigation completely - MULTIPLE SELECTORS
         const nav = document.querySelector('.nav');
         if (nav) {
             nav.style.display = 'none';
+            nav.style.visibility = 'hidden';
+            nav.style.opacity = '0';
+            nav.style.height = '0';
+            nav.style.overflow = 'hidden';
             console.log('Navigation hidden');
+        }
+        // Also hide nav-content directly
+        const navContent = document.querySelector('.nav-content');
+        if (navContent) {
+            navContent.style.display = 'none';
+            navContent.style.visibility = 'hidden';
         }
         
         // Keep header but customize it

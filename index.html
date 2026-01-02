@@ -777,7 +777,7 @@
         <!-- Navigation -->
         <nav class="nav">
             <div class="nav-content">
-                <button class="nav-tab active" onclick="showView('clients')">Clients</button>
+                <button class="nav-tab active" onclick="if(!window.isIntakeFormMode) showView('clients')">Clients</button>
                 <button class="nav-tab" onclick="showView('newClient')" id="newClientTab">New Client</button>
                 <button class="nav-tab" onclick="showView('clientDetail')" id="clientDetailTab" style="display: none;">Client Profile</button>
                 <button class="nav-tab" onclick="showView('newSession')" id="newSessionTab" style="display: none;">New Session</button>

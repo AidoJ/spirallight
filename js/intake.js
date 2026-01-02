@@ -208,9 +208,46 @@ async function submitClientIntake(e) {
             throw result.error;
         }
 
-        // Show success message
-        document.getElementById('clientIntakeForm').style.display = 'none';
-        document.getElementById('intakeSuccessMessage').style.display = 'block';
+        // Hide form and show success message
+        const form = document.getElementById('clientIntakeForm');
+        const successMsg = document.getElementById('intakeSuccessMessage');
+        
+        if (form) {
+            form.style.display = 'none';
+            form.style.visibility = 'hidden';
+        }
+        
+        if (successMsg) {
+            successMsg.style.display = 'block';
+            successMsg.style.visibility = 'visible';
+        }
+        
+        // CRITICAL: Keep intake mode active and hide ALL other views
+        window.isIntakeFormMode = true;
+        window.skipNormalAppInit = true;
+        
+        // Force hide all other views and navigation
+        document.querySelectorAll('.view').forEach(v => {
+            if (v.id !== 'clientIntakeView') {
+                v.style.setProperty('display', 'none', 'important');
+                v.style.setProperty('visibility', 'hidden', 'important');
+            }
+        });
+        
+        const nav = document.querySelector('.nav');
+        if (nav) {
+            nav.style.setProperty('display', 'none', 'important');
+            nav.style.setProperty('visibility', 'hidden', 'important');
+        }
+        
+        // Ensure intake view stays visible
+        const intakeView = document.getElementById('clientIntakeView');
+        if (intakeView) {
+            intakeView.style.setProperty('display', 'block', 'important');
+            intakeView.style.setProperty('visibility', 'visible', 'important');
+        }
+        
+        console.log('Intake form submitted successfully - client locked to success view');
     } catch (error) {
         console.error('Error submitting intake form:', error);
         submitButton.disabled = false;

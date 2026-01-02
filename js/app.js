@@ -31,9 +31,13 @@ function waitForSupabase(maxAttempts = 10, delay = 100) {
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('=== DOMContentLoaded fired ===');
+    console.log('Full URL:', window.location.href);
+    
     // Check if this is a client intake link FIRST (before any initialization)
     const urlParams = new URLSearchParams(window.location.search);
     const clientToken = urlParams.get('client');
+    console.log('Client token from URL:', clientToken);
 
     // If it's an intake form link, handle it differently
     if (clientToken) {

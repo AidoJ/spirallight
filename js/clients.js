@@ -69,10 +69,15 @@ function displayClients(filtered = null) {
         return;
     }
 
-    // Load session counts for each client
+    // Load session counts for each client (with error handling)
     Promise.all(clientsToShow.map(async (client) => {
-        const { data: sessions } = await SessionService.getByClientId(client.id);
-        return { client, sessionCount: sessions?.length || 0 };
+        try {
+            const { data: sessions } = await SessionService.getByClientId(client.id);
+            return { client, sessionCount: sessions?.length || 0 };
+        } catch (error) {
+            console.error(`Error loading sessions for client ${client.id}:`, error);
+            return { client, sessionCount: 0 };
+        }
     })).then(clientData => {
         clientList.innerHTML = clientData.map(({ client, sessionCount }) => {
             const initials = getInitials(client.name);
@@ -91,6 +96,29 @@ function displayClients(filtered = null) {
                                 </div>
                                 <div style="margin-top: 0.5rem;">
                                     <span class="badge badge-primary">${sessionCount} session${sessionCount !== 1 ? 's' : ''}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }).catch(error => {
+        console.error('Error displaying clients:', error);
+        // Still show clients even if session count fails
+        clientList.innerHTML = clientsToShow.map(client => {
+            const initials = getInitials(client.name);
+            return `
+                <div class="client-card" onclick="viewClient('${client.id}')">
+                    <div class="client-card-header">
+                        <div style="display: flex; gap: 1rem; flex: 1; min-width: 0;">
+                            <div class="client-avatar">${initials}</div>
+                            <div class="client-info">
+                                <div class="client-name">${escapeHtml(client.name)}</div>
+                                <div class="client-meta">
+                                    ${client.email ? `<span class="client-meta-item">📧 ${escapeHtml(client.email)}</span>` : ''}
+                                    ${client.phone ? `<span class="client-meta-item">📞 ${escapeHtml(client.phone)}</span>` : ''}
+                                    ${client.age ? `<span class="client-meta-item">👤 ${client.age} years</span>` : ''}
                                 </div>
                             </div>
                         </div>

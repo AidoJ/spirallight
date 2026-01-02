@@ -3,9 +3,8 @@
  * Sets up the application when DOM is ready
  */
 
-// Global state
-let currentClientId = null;
-let currentSessionId = null;
+// Global state - currentClientId and currentSessionId are declared in clients.js and sessions.js
+// We use window.currentClientId and window.currentSessionId for global access
 
 /**
  * Wait for Supabase library to load

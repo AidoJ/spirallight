@@ -133,10 +133,18 @@ async function submitClientIntake(e) {
         };
 
         // Save to database
+        console.log('Submitting session data:', sessionData);
         const result = await SessionService.create(sessionData);
+        console.log('SessionService.create result:', result);
 
         if (result.error) {
+            console.error('SessionService.create error:', result.error);
             throw result.error;
+        }
+        
+        if (!result.data) {
+            console.error('SessionService.create returned no data');
+            throw new Error('Failed to create session - no data returned');
         }
 
         // SECURITY: Hide form and show success message

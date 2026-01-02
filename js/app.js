@@ -46,10 +46,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (clientToken && clientToken.trim() !== '') {
         console.log('=== CLIENT INTAKE LINK DETECTED ===');
         console.log('Client token:', clientToken);
-        console.log('Full URL:', window.location.href);
         
         // Set a flag to prevent normal app initialization
         window.isIntakeFormMode = true;
+        
+        // IMMEDIATELY hide all views and navigation
+        document.querySelectorAll('.view').forEach(v => {
+            v.classList.remove('active');
+            v.style.display = 'none';
+        });
+        const nav = document.querySelector('.nav');
+        if (nav) nav.style.display = 'none';
         
         // Wait for Supabase library to load
         try {
@@ -69,7 +76,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Initialize Supabase for intake form
         const initResult = initSupabase();
         console.log('Supabase init result:', initResult);
-        console.log('supabaseClient:', supabaseClient);
         
         if (!initResult || !supabaseClient) {
             document.body.innerHTML = `
@@ -79,14 +85,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 </div>
             `;
             return;
-        }
-
-        // Hide the default clientsView immediately
-        const defaultView = document.getElementById('clientsView');
-        if (defaultView) {
-            defaultView.classList.remove('active');
-            defaultView.style.display = 'none';
-            console.log('Default clientsView hidden');
         }
 
         // Show client intake form (skip normal app initialization)

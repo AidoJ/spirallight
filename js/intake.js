@@ -65,14 +65,24 @@ async function showClientIntakeForm(clientId) {
             return;
         }
 
-        // Force hide ALL other views first (again, just to be sure)
+        // NUCLEAR OPTION: Force hide ALL other views and navigation
         document.querySelectorAll('.view').forEach(v => {
             if (v.id !== 'clientIntakeView') {
                 v.classList.remove('active');
                 v.style.display = 'none';
                 v.style.visibility = 'hidden';
+                v.style.opacity = '0';
+                v.style.height = '0';
+                v.style.overflow = 'hidden';
             }
         });
+        
+        // Hide navigation completely
+        const nav = document.querySelector('.nav');
+        if (nav) {
+            nav.style.display = 'none';
+            nav.style.visibility = 'hidden';
+        }
         
         // Show the intake view - force it to be visible with multiple methods
         intakeView.classList.add('active');
@@ -81,15 +91,36 @@ async function showClientIntakeForm(clientId) {
         intakeView.style.opacity = '1';
         intakeView.style.position = 'relative';
         intakeView.style.zIndex = '1000';
+        intakeView.style.height = 'auto';
+        intakeView.style.overflow = 'visible';
         console.log('Intake view activated and displayed');
         
-        // Force it again after a brief delay to override any CSS
+        // Force it again after delays to override any CSS or other scripts
         setTimeout(() => {
+            // Hide everything except intake view
+            document.querySelectorAll('.view').forEach(v => {
+                if (v.id !== 'clientIntakeView') {
+                    v.style.display = 'none';
+                    v.style.visibility = 'hidden';
+                }
+            });
+            // Show intake view
             intakeView.classList.add('active');
             intakeView.style.display = 'block';
             intakeView.style.visibility = 'visible';
-            console.log('Intake view forced visible again');
+            console.log('Intake view forced visible again (50ms)');
         }, 50);
+        
+        setTimeout(() => {
+            // Final check and force
+            document.querySelectorAll('.view').forEach(v => {
+                if (v.id !== 'clientIntakeView') {
+                    v.style.display = 'none';
+                }
+            });
+            intakeView.style.display = 'block';
+            console.log('Intake view forced visible again (200ms)');
+        }, 200);
         
         const intakeClientIdInput = document.getElementById('intakeClientId');
         if (intakeClientIdInput) {

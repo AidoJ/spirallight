@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiral Light Healing - Client Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00AABB;
+            --primary-dark: #008C9A;
+            --primary-light: #33C8D5;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #00AABB 0%, #33C8D5 100%);
+            color: white;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .logo p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Navigation */
+        .nav {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 76px;
+            z-index: 99;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            padding: 0 1rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-content::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .nav-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .nav-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .nav-tab {
+            flex-shrink: 0;
+            padding: 1rem 1.5rem;
+            border: none;
+            background: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary);
+            background: rgba(0, 170, 187, 0.05);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 2rem 1rem;
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #059669;
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover:not(:disabled) {
+            background: var(--background);
+            color: var(--text-primary);
+        }
+
+        /* Search & Filters */
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 0.75rem 1rem;
+            padding-left: 2.5rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            background: white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>') no-repeat 0.75rem center;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 170, 187, 0.1);
+        }
+
+        /* Client List */
+        .client-grid {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .client-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .client-card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .client-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .client-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .client-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .client-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .client-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .client-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .client-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+
+        .badge-primary {
+            background: rgba(0, 170, 187, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-secondary {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+        }
+
+        /* Forms */
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 1.25rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-label.required::after {
+            content: '*';
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 170, 187, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .radio-item,
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .radio-item input[type="radio"],
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .table-input {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--background);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        td input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .add-row-btn {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        /* Session List */
+        .session-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .session-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .session-card:hover {
+            box-shadow: var(--shadow);
+            border-color: var(--primary-light);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .session-date {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .session-info {
+            display: grid;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Detail View */
+        .detail-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .detail-card {
+            background: var(--background);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+        }
+
+        /* Notes Section */
+        .notes-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .notes-content {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .logo h1 {
+                font-size: 1.25rem;
+            }
+
+            .nav {
+                top: 136px;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .client-card-header {
+                flex-direction: column;
+            }
+
+            .client-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .client-actions .btn {
+                flex: 1;
+            }
+
+            .detail-row {
+                grid-template-columns: 1fr;
+                gap: 0.25rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-input {
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 20px;
+            }
+
+            .nav-tab {
+                padding: 0.875rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--text-primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-xl);
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: var(--secondary);
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">✨</div>
+                    <div>
+                        <h1>Spiral Light Healing</h1>
+                        <p>Client Management System</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="nav-content">
+                <button class="nav-tab active" onclick="showView('clients')">Clients</button>
+                <button class="nav-tab" onclick="showView('newClient')" id="newClientTab">New Client</button>
+                <button class="nav-tab" onclick="showView('clientDetail')" id="clientDetailTab" style="display: none;">Client Profile</button>
+                <button class="nav-tab" onclick="showView('newSession')" id="newSessionTab" style="display: none;">New Session</button>
+                <button class="nav-tab" onclick="showView('sessionDetail')" id="sessionDetailTab" style="display: none;">Session Details</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Clients List View -->
+            <div id="clientsView" class="view active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">All Clients</h2>
+                        <button class="btn btn-primary" onclick="showView('newClient')">
+                            <span>+</span> Add New Client
+                        </button>
+                    </div>
+                    <div class="search-bar">
+                        <input type="text" class="search-input" id="searchBox" placeholder="Search clients by name, email, or phone..." onkeyup="searchClients()">
+                    </div>
+                    <div id="clientList" class="client-grid"></div>
+                </div>
+            </div>
+
+            <!-- New Client Form -->
+            <div id="newClientView" class="view">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" id="clientFormTitle">Add New Client</h2>
+                    </div>
+                    <form id="clientForm" onsubmit="saveClient(event)">
+                        <input type="hidden" id="clientId">
+                        <div class="form-section">
+                            <h3 class="section-header">Client Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label required">Name</label>
+                                    <input type="text" class="form-input" id="clientName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Age</label>
+                                    <input type="number" class="form-input" id="clientAge">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-input" id="clientDob">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label required">Email</label>
+                                    <input type="email" class="form-input" id="clientEmail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label required">Phone</label>
+                                    <input type="tel" class="form-input" id="clientPhone" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Address</label>
+                                    <input type="text" class="form-input" id="clientAddress">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-input" id="clientCity">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Postal Code</label>
+                                    <input type="text" class="form-input" id="clientPostal">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Occupation</label>
+                                    <input type="text" class="form-input" id="clientOccupation">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Referred By</label>
+                                    <input type="text" class="form-input" id="clientReferredBy">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Present M.D. & Phone</label>
+                                    <input type="text" class="form-input" id="clientMD">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button type="submit" class="btn btn-primary">Save Client</button>
+                            <button type="button" class="btn btn-outline" onclick="resetClientForm()">Reset</button>
+                            <button type="button" class="btn btn-ghost" onclick="showView('clients')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Client Detail View -->
+            <div id="clientDetailView" class="view">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" id="clientDetailName"></h2>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="startNewSession()">
+                                <span>+</span> New Session
+                            </button>
+                            <button class="btn btn-outline" onclick="editCurrentClient()">Edit Client</button>
+                            <button class="btn btn-danger" onclick="deleteCurrentClient()">Delete</button>
+                            <button class="btn btn-ghost" onclick="showView('clients')">Back</button>
+                        </div>
+                    </div>
+
+                    <div id="clientDetailContent"></div>
+
+                    <div class="form-section">
+                        <h3 class="section-header">Session History</h3>
+                        <div id="sessionList" class="session-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Session Form -->
+            <div id="newSessionView" class="view">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" id="sessionFormTitle">New Session</h2>
+                    </div>
+                    <form id="sessionForm" onsubmit="saveSession(event)">
+                        <input type="hidden" id="sessionId">
+                        <input type="hidden" id="sessionClientId">
+
+                        <div class="form-section">
+                            <h3 class="section-header">Session Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label required">Session Date</label>
+                                    <input type="date" class="form-input" id="sessionDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Practitioner Name</label>
+                                    <input type="text" class="form-input" id="sessionPractitioner">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-header">Chief Complaints</h3>
+                            <div class="table-input">
+                                <table id="complaintsTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 35%;">Chief Complaint</th>
+                                            <th style="width: 20%;">Since?</th>
+                                            <th style="width: 25%;">Causes?</th>
+                                            <th style="width: 15%;">Severity (1-10)</th>
+                                            <th style="width: 5%;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="complaintsBody">
+                                        <tr>
+                                            <td><input type="text" placeholder="Describe complaint"></td>
+                                            <td><input type="text" placeholder="When did it start?"></td>
+                                            <td><input type="text" placeholder="What caused it?"></td>
+                                            <td><input type="number" min="1" max="10" placeholder="1-10"></td>
+                                            <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-ghost add-row-btn" onclick="addComplaintRow()">+ Add Row</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-header">Pain & Injury Details</h3>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label class="form-label">What aggravates your pain?</label>
+                                    <textarea class="form-textarea" id="sessionAggravates"></textarea>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Are you experiencing any swelling? Where?</label>
+                                    <textarea class="form-textarea" id="sessionSwelling"></textarea>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Indicate injury site and areas of pain</label>
+                                    <textarea class="form-textarea" id="sessionInjurySite"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-header">Medications & Treatments</h3>
+                            <div class="table-input">
+                                <table id="medicationsTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 35%;">Medication</th>
+                                            <th style="width: 25%;">Since?</th>
+                                            <th style="width: 35%;">Adverse Effects?</th>
+                                            <th style="width: 5%;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="medicationsBody">
+                                        <tr>
+                                            <td><input type="text" placeholder="Medication name"></td>
+                                            <td><input type="text" placeholder="How long?"></td>
+                                            <td><input type="text" placeholder="Any side effects?"></td>
+                                            <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-ghost add-row-btn" onclick="addMedicationRow()">+ Add Row</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-header">Current Care</h3>
+                            <div class="table-input">
+                                <table id="healthcareTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%;">Healthcare Provider</th>
+                                            <th style="width: 30%;">For (Condition)</th>
+                                            <th style="width: 35%;">Treatment</th>
+                                            <th style="width: 5%;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="healthcareBody">
+                                        <tr>
+                                            <td><input type="text" placeholder="Provider name"></td>
+                                            <td><input type="text" placeholder="Condition"></td>
+                                            <td><input type="text" placeholder="Treatment type"></td>
+                                            <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-ghost add-row-btn" onclick="addHealthcareRow()">+ Add Row</button>
+                            </div>
+
+                            <div class="table-input" style="margin-top: 1rem;">
+                                <table id="therapiesTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 35%;">Current Therapy/Treatment</th>
+                                            <th style="width: 25%;">Since?</th>
+                                            <th style="width: 35%;">Results?</th>
+                                            <th style="width: 5%;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="therapiesBody">
+                                        <tr>
+                                            <td><input type="text" placeholder="Therapy type"></td>
+                                            <td><input type="text" placeholder="How long?"></td>
+                                            <td><input type="text" placeholder="Effectiveness"></td>
+                                            <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-ghost add-row-btn" onclick="addTherapyRow()">+ Add Row</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-header">Medical History</h3>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label class="form-label">Do you have a pacemaker or any implants including orthotics?</label>
+                                    <input type="text" class="form-input" id="sessionImplants">
+                                </div>
+                            </div>
+
+                            <div class="table-input" style="margin-top: 1rem;">
+                                <table id="injuriesTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 35%;">Other Injuries/Conditions</th>
+                                            <th style="width: 25%;">Since?</th>
+                                            <th style="width: 35%;">Complications/Long-term Effects?</th>
+                                            <th style="width: 5%;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="injuriesBody">
+                                        <tr>
+                                            <td><input type="text" placeholder="Injury or condition"></td>
+                                            <td><input type="text" placeholder="When?"></td>
+                                            <td><input type="text" placeholder="Effects"></td>
+                                            <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-ghost add-row-btn" onclick="addInjuryRow()">+ Add Row</button>
+                            </div>
+
+                            <div class="table-input" style="margin-top: 1rem;">
+                                <table id="operationsTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40%;">Operations</th>
+                                            <th style="width: 25%;">When?</th>
+                                            <th style="width: 30%;">Complications?</th>
+                                            <th style="width: 5%;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="operationsBody">
+                                        <tr>
+                                            <td><input type="text" placeholder="Operation type"></td>
+                                            <td><input type="text" placeholder="Date/Year"></td>
+                                            <td><input type="text" placeholder="Any complications?"></td>
+                                            <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-ghost add-row-btn" onclick="addOperationRow()">+ Add Row</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-header">Lifestyle</h3>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label class="form-label">What exercise(s) do you do, how much, and how often?</label>
+                                    <textarea class="form-textarea" id="sessionExercise"></textarea>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Have you been treated with Bowen before?</label>
+                                    <textarea class="form-textarea" id="sessionBowenHistory" rows="2"></textarea>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Is there anything you would like to add?</label>
+                                    <textarea class="form-textarea" id="sessionAdditional" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-header">Therapist Notes</h3>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label class="form-label">Session Notes</label>
+                                    <textarea class="form-textarea" id="sessionNotes" rows="6" placeholder="Treatment notes, observations, recommendations, follow-up plans..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button type="submit" class="btn btn-primary">Save Session</button>
+                            <button type="button" class="btn btn-outline" onclick="resetSessionForm()">Reset</button>
+                            <button type="button" class="btn btn-ghost" onclick="backToClientDetail()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Session Detail View -->
+            <div id="sessionDetailView" class="view">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" id="sessionDetailTitle"></h2>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="editCurrentSession()">Edit Session</button>
+                            <button class="btn btn-danger" onclick="deleteCurrentSession()">Delete</button>
+                            <button class="btn btn-ghost" onclick="backToClientDetail()">Back to Client</button>
+                        </div>
+                    </div>
+                    <div id="sessionDetailContent"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Data structure
+        let clients = JSON.parse(localStorage.getItem('clients')) || [];
+        let sessions = JSON.parse(localStorage.getItem('sessions')) || [];
+        let currentClientId = null;
+        let currentSessionId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            displayClients();
+            // Set today's date as default for new sessions
+            document.getElementById('sessionDate').valueAsDate = new Date();
+        });
+
+        // Auto-calculate age from DOB
+        document.getElementById('clientDob').addEventListener('change', function() {
+            const dob = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            document.getElementById('clientAge').value = age;
+        });
+
+        // View Management
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+            const viewMap = {
+                'clients': 'clientsView',
+                'newClient': 'newClientView',
+                'clientDetail': 'clientDetailView',
+                'newSession': 'newSessionView',
+                'sessionDetail': 'sessionDetailView'
+            };
+
+            const tabMap = {
+                'clients': 0,
+                'newClient': 'newClientTab',
+                'clientDetail': 'clientDetailTab',
+                'newSession': 'newSessionTab',
+                'sessionDetail': 'sessionDetailTab'
+            };
+
+            document.getElementById(viewMap[viewName]).classList.add('active');
+
+            if (typeof tabMap[viewName] === 'number') {
+                document.querySelectorAll('.nav-tab')[tabMap[viewName]].classList.add('active');
+            } else {
+                const tab = document.getElementById(tabMap[viewName]);
+                if (tab) {
+                    tab.style.display = 'block';
+                    tab.classList.add('active');
+                }
+            }
+
+            if (viewName === 'clients') {
+                displayClients();
+                document.getElementById('newClientTab').style.display = 'block';
+                document.getElementById('clientDetailTab').style.display = 'none';
+                document.getElementById('newSessionTab').style.display = 'none';
+                document.getElementById('sessionDetailTab').style.display = 'none';
+            }
+        }
+
+        // Client Management
+        function saveClient(e) {
+            e.preventDefault();
+
+            const client = {
+                id: document.getElementById('clientId').value || Date.now().toString(),
+                name: document.getElementById('clientName').value,
+                age: document.getElementById('clientAge').value,
+                dob: document.getElementById('clientDob').value,
+                email: document.getElementById('clientEmail').value,
+                phone: document.getElementById('clientPhone').value,
+                address: document.getElementById('clientAddress').value,
+                city: document.getElementById('clientCity').value,
+                postal: document.getElementById('clientPostal').value,
+                occupation: document.getElementById('clientOccupation').value,
+                referredBy: document.getElementById('clientReferredBy').value,
+                md: document.getElementById('clientMD').value,
+                createdAt: document.getElementById('clientId').value ?
+                    clients.find(c => c.id === document.getElementById('clientId').value).createdAt :
+                    new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            if (document.getElementById('clientId').value) {
+                const index = clients.findIndex(c => c.id === client.id);
+                clients[index] = client;
+            } else {
+                clients.push(client);
+            }
+
+            localStorage.setItem('clients', JSON.stringify(clients));
+            showToast('Client saved successfully!', 'success');
+            resetClientForm();
+            showView('clients');
+        }
+
+        function resetClientForm() {
+            document.getElementById('clientForm').reset();
+            document.getElementById('clientId').value = '';
+            document.getElementById('clientFormTitle').textContent = 'Add New Client';
+        }
+
+        function editCurrentClient() {
+            const client = clients.find(c => c.id === currentClientId);
+            document.getElementById('clientFormTitle').textContent = 'Edit Client';
+            document.getElementById('clientId').value = client.id;
+            document.getElementById('clientName').value = client.name;
+            document.getElementById('clientAge').value = client.age;
+            document.getElementById('clientDob').value = client.dob;
+            document.getElementById('clientEmail').value = client.email;
+            document.getElementById('clientPhone').value = client.phone;
+            document.getElementById('clientAddress').value = client.address;
+            document.getElementById('clientCity').value = client.city;
+            document.getElementById('clientPostal').value = client.postal;
+            document.getElementById('clientOccupation').value = client.occupation;
+            document.getElementById('clientReferredBy').value = client.referredBy;
+            document.getElementById('clientMD').value = client.md;
+            showView('newClient');
+        }
+
+        function deleteCurrentClient() {
+            if (confirm('Are you sure you want to delete this client? This will also delete all associated sessions.')) {
+                clients = clients.filter(c => c.id !== currentClientId);
+                sessions = sessions.filter(s => s.clientId !== currentClientId);
+                localStorage.setItem('clients', JSON.stringify(clients));
+                localStorage.setItem('sessions', JSON.stringify(sessions));
+                showToast('Client deleted successfully!', 'success');
+                showView('clients');
+            }
+        }
+
+        function displayClients(filtered = null) {
+            const clientList = document.getElementById('clientList');
+            const clientsToShow = filtered || clients;
+
+            if (clientsToShow.length === 0) {
+                clientList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👤</div>
+                        <h3>No clients found</h3>
+                        <p>Add your first client to get started</p>
+                        <button class="btn btn-primary" onclick="showView('newClient')" style="margin-top: 1rem;">
+                            <span>+</span> Add New Client
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            clientList.innerHTML = clientsToShow.map(client => {
+                const clientSessions = sessions.filter(s => s.clientId === client.id);
+                const initials = client.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                return `
+                    <div class="client-card" onclick="viewClient('${client.id}')">
+                        <div class="client-card-header">
+                            <div style="display: flex; gap: 1rem; flex: 1; min-width: 0;">
+                                <div class="client-avatar">${initials}</div>
+                                <div class="client-info">
+                                    <div class="client-name">${client.name}</div>
+                                    <div class="client-meta">
+                                        <span class="client-meta-item">📧 ${client.email}</span>
+                                        <span class="client-meta-item">📞 ${client.phone}</span>
+                                        ${client.age ? `<span class="client-meta-item">👤 ${client.age} years</span>` : ''}
+                                    </div>
+                                    <div style="margin-top: 0.5rem;">
+                                        <span class="badge badge-primary">${clientSessions.length} session${clientSessions.length !== 1 ? 's' : ''}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function searchClients() {
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const filtered = clients.filter(c =>
+                c.name.toLowerCase().includes(search) ||
+                c.email.toLowerCase().includes(search) ||
+                c.phone.includes(search)
+            );
+            displayClients(filtered);
+        }
+
+        function viewClient(id) {
+            currentClientId = id;
+            const client = clients.find(c => c.id === id);
+            const clientSessions = sessions.filter(s => s.clientId === id).sort((a, b) =>
+                new Date(b.date) - new Date(a.date)
+            );
+
+            document.getElementById('clientDetailName').textContent = client.name;
+            document.getElementById('clientDetailContent').innerHTML = `
+                <div class="detail-grid">
+                    <div class="detail-card">
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600;">Contact Information</h3>
+                        <div class="detail-row">
+                            <div class="detail-label">Email</div>
+                            <div class="detail-value">${client.email}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Phone</div>
+                            <div class="detail-value">${client.phone}</div>
+                        </div>
+                        ${client.address ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Address</div>
+                            <div class="detail-value">${client.address}${client.city ? ', ' + client.city : ''}${client.postal ? ' ' + client.postal : ''}</div>
+                        </div>` : ''}
+                    </div>
+                    <div class="detail-card">
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600;">Personal Information</h3>
+                        ${client.age ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Age</div>
+                            <div class="detail-value">${client.age} years</div>
+                        </div>` : ''}
+                        ${client.dob ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Date of Birth</div>
+                            <div class="detail-value">${new Date(client.dob).toLocaleDateString()}</div>
+                        </div>` : ''}
+                        ${client.occupation ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Occupation</div>
+                            <div class="detail-value">${client.occupation}</div>
+                        </div>` : ''}
+                        ${client.referredBy ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Referred By</div>
+                            <div class="detail-value">${client.referredBy}</div>
+                        </div>` : ''}
+                        ${client.md ? `
+                        <div class="detail-row">
+                            <div class="detail-label">M.D.</div>
+                            <div class="detail-value">${client.md}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            displaySessions(clientSessions);
+            showView('clientDetail');
+        }
+
+        function displaySessions(clientSessions) {
+            const sessionList = document.getElementById('sessionList');
+
+            if (clientSessions.length === 0) {
+                sessionList.innerHTML = `
+                    <div class="empty-state" style="padding: 2rem;">
+                        <div class="empty-icon" style="font-size: 3rem;">📋</div>
+                        <h3>No sessions yet</h3>
+                        <p>Create the first session for this client</p>
+                    </div>
+                `;
+                return;
+            }
+
+            sessionList.innerHTML = clientSessions.map(session => `
+                <div class="session-card" onclick="viewSession('${session.id}')">
+                    <div class="session-header">
+                        <div>
+                            <div class="session-date">Session: ${new Date(session.date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}</div>
+                            ${session.practitioner ? `<p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">Practitioner: ${session.practitioner}</p>` : ''}
+                        </div>
+                        <span class="badge badge-secondary">View Details</span>
+                    </div>
+                    ${session.complaints && session.complaints.length > 0 ? `
+                        <div class="session-info">
+                            <strong>Chief Complaints:</strong>
+                            ${session.complaints.filter(c => c.complaint).map(c => c.complaint).join(', ')}
+                        </div>
+                    ` : ''}
+                    ${session.notes ? `
+                        <div style="margin-top: 0.75rem; padding: 0.75rem; background: #fffbeb; border-radius: 6px; font-size: 0.875rem;">
+                            <strong>Notes:</strong> ${session.notes.substring(0, 150)}${session.notes.length > 150 ? '...' : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Session Management
+        function startNewSession() {
+            resetSessionForm();
+            document.getElementById('sessionClientId').value = currentClientId;
+            document.getElementById('sessionFormTitle').textContent = `New Session for ${clients.find(c => c.id === currentClientId).name}`;
+            showView('newSession');
+        }
+
+        function saveSession(e) {
+            e.preventDefault();
+
+            const session = {
+                id: document.getElementById('sessionId').value || Date.now().toString(),
+                clientId: document.getElementById('sessionClientId').value,
+                date: document.getElementById('sessionDate').value,
+                practitioner: document.getElementById('sessionPractitioner').value,
+                complaints: getTableData('complaintsTable'),
+                aggravates: document.getElementById('sessionAggravates').value,
+                swelling: document.getElementById('sessionSwelling').value,
+                injurySite: document.getElementById('sessionInjurySite').value,
+                medications: getTableData('medicationsTable'),
+                healthcare: getTableData('healthcareTable'),
+                therapies: getTableData('therapiesTable'),
+                implants: document.getElementById('sessionImplants').value,
+                injuries: getTableData('injuriesTable'),
+                operations: getTableData('operationsTable'),
+                exercise: document.getElementById('sessionExercise').value,
+                bowenHistory: document.getElementById('sessionBowenHistory').value,
+                additional: document.getElementById('sessionAdditional').value,
+                notes: document.getElementById('sessionNotes').value,
+                createdAt: document.getElementById('sessionId').value ?
+                    sessions.find(s => s.id === document.getElementById('sessionId').value).createdAt :
+                    new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            if (document.getElementById('sessionId').value) {
+                const index = sessions.findIndex(s => s.id === session.id);
+                sessions[index] = session;
+            } else {
+                sessions.push(session);
+            }
+
+            localStorage.setItem('sessions', JSON.stringify(sessions));
+            showToast('Session saved successfully!', 'success');
+            resetSessionForm();
+            viewClient(session.clientId);
+        }
+
+        function getTableData(tableId) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+            const data = [];
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const rowData = {};
+                inputs.forEach((input, index) => {
+                    if (input.value.trim()) {
+                        rowData[`col${index}`] = input.value;
+                    }
+                });
+                if (Object.keys(rowData).length > 0) {
+                    data.push(rowData);
+                }
+            });
+
+            // Map column names based on table
+            if (tableId === 'complaintsTable') {
+                return data.map(d => ({
+                    complaint: d.col0,
+                    since: d.col1,
+                    causes: d.col2,
+                    severity: d.col3
+                }));
+            } else if (tableId === 'medicationsTable') {
+                return data.map(d => ({
+                    medication: d.col0,
+                    since: d.col1,
+                    effects: d.col2
+                }));
+            } else if (tableId === 'healthcareTable') {
+                return data.map(d => ({
+                    provider: d.col0,
+                    condition: d.col1,
+                    treatment: d.col2
+                }));
+            } else if (tableId === 'therapiesTable') {
+                return data.map(d => ({
+                    therapy: d.col0,
+                    since: d.col1,
+                    results: d.col2
+                }));
+            } else if (tableId === 'injuriesTable') {
+                return data.map(d => ({
+                    injury: d.col0,
+                    since: d.col1,
+                    complications: d.col2
+                }));
+            } else if (tableId === 'operationsTable') {
+                return data.map(d => ({
+                    operation: d.col0,
+                    when: d.col1,
+                    complications: d.col2
+                }));
+            }
+
+            return data;
+        }
+
+        function setTableData(tableId, data, bodyId) {
+            const tbody = document.getElementById(bodyId);
+            tbody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                // Add one empty row
+                if (tableId === 'complaintsTable') addComplaintRow();
+                else if (tableId === 'medicationsTable') addMedicationRow();
+                else if (tableId === 'healthcareTable') addHealthcareRow();
+                else if (tableId === 'therapiesTable') addTherapyRow();
+                else if (tableId === 'injuriesTable') addInjuryRow();
+                else if (tableId === 'operationsTable') addOperationRow();
+                return;
+            }
+
+            data.forEach(item => {
+                if (tableId === 'complaintsTable') {
+                    addComplaintRow(item.complaint, item.since, item.causes, item.severity);
+                } else if (tableId === 'medicationsTable') {
+                    addMedicationRow(item.medication, item.since, item.effects);
+                } else if (tableId === 'healthcareTable') {
+                    addHealthcareRow(item.provider, item.condition, item.treatment);
+                } else if (tableId === 'therapiesTable') {
+                    addTherapyRow(item.therapy, item.since, item.results);
+                } else if (tableId === 'injuriesTable') {
+                    addInjuryRow(item.injury, item.since, item.complications);
+                } else if (tableId === 'operationsTable') {
+                    addOperationRow(item.operation, item.when, item.complications);
+                }
+            });
+        }
+
+        function addComplaintRow(complaint = '', since = '', causes = '', severity = '') {
+            const tbody = document.getElementById('complaintsBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Describe complaint" value="${complaint}"></td>
+                <td><input type="text" placeholder="When did it start?" value="${since}"></td>
+                <td><input type="text" placeholder="What caused it?" value="${causes}"></td>
+                <td><input type="number" min="1" max="10" placeholder="1-10" value="${severity}"></td>
+                <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addMedicationRow(medication = '', since = '', effects = '') {
+            const tbody = document.getElementById('medicationsBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Medication name" value="${medication}"></td>
+                <td><input type="text" placeholder="How long?" value="${since}"></td>
+                <td><input type="text" placeholder="Any side effects?" value="${effects}"></td>
+                <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addHealthcareRow(provider = '', condition = '', treatment = '') {
+            const tbody = document.getElementById('healthcareBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Provider name" value="${provider}"></td>
+                <td><input type="text" placeholder="Condition" value="${condition}"></td>
+                <td><input type="text" placeholder="Treatment type" value="${treatment}"></td>
+                <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addTherapyRow(therapy = '', since = '', results = '') {
+            const tbody = document.getElementById('therapiesBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Therapy type" value="${therapy}"></td>
+                <td><input type="text" placeholder="How long?" value="${since}"></td>
+                <td><input type="text" placeholder="Effectiveness" value="${results}"></td>
+                <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addInjuryRow(injury = '', since = '', complications = '') {
+            const tbody = document.getElementById('injuriesBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Injury or condition" value="${injury}"></td>
+                <td><input type="text" placeholder="When?" value="${since}"></td>
+                <td><input type="text" placeholder="Effects" value="${complications}"></td>
+                <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addOperationRow(operation = '', when = '', complications = '') {
+            const tbody = document.getElementById('operationsBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Operation type" value="${operation}"></td>
+                <td><input type="text" placeholder="Date/Year" value="${when}"></td>
+                <td><input type="text" placeholder="Any complications?" value="${complications}"></td>
+                <td><button type="button" onclick="removeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function removeTableRow(btn) {
+            const row = btn.closest('tr');
+            const tbody = row.parentElement;
+            if (tbody.children.length > 1) {
+                row.remove();
+            } else {
+                // Clear the last row instead of removing it
+                row.querySelectorAll('input').forEach(input => input.value = '');
+            }
+        }
+
+        function resetSessionForm() {
+            document.getElementById('sessionForm').reset();
+            document.getElementById('sessionId').value = '';
+            document.getElementById('sessionDate').valueAsDate = new Date();
+
+            // Reset all tables to one empty row
+            ['complaintsBody', 'medicationsBody', 'healthcareBody', 'therapiesBody', 'injuriesBody', 'operationsBody'].forEach(bodyId => {
+                const tbody = document.getElementById(bodyId);
+                tbody.innerHTML = '';
+            });
+
+            addComplaintRow();
+            addMedicationRow();
+            addHealthcareRow();
+            addTherapyRow();
+            addInjuryRow();
+            addOperationRow();
+        }
+
+        function viewSession(id) {
+            currentSessionId = id;
+            const session = sessions.find(s => s.id === id);
+            const client = clients.find(c => c.id === session.clientId);
+
+            document.getElementById('sessionDetailTitle').textContent = `Session - ${new Date(session.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}`;
+
+            let html = `
+                <div class="detail-grid">
+                    <div class="detail-card">
+                        <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600;">Session Information</h3>
+                        <div class="detail-row">
+                            <div class="detail-label">Client</div>
+                            <div class="detail-value">${client.name}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Date</div>
+                            <div class="detail-value">${new Date(session.date).toLocaleDateString()}</div>
+                        </div>
+                        ${session.practitioner ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Practitioner</div>
+                            <div class="detail-value">${session.practitioner}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            if (session.complaints && session.complaints.length > 0 && session.complaints.some(c => c.complaint)) {
+                html += `
+                    <div class="form-section">
+                        <h3 class="section-header">Chief Complaints</h3>
+                        <div class="detail-card">
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Complaint</th>
+                                        <th>Since</th>
+                                        <th>Causes</th>
+                                        <th>Severity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${session.complaints.filter(c => c.complaint).map(c => `
+                                        <tr>
+                                            <td>${c.complaint || '-'}</td>
+                                            <td>${c.since || '-'}</td>
+                                            <td>${c.causes || '-'}</td>
+                                            <td>${c.severity || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (session.aggravates || session.swelling || session.injurySite) {
+                html += `
+                    <div class="form-section">
+                        <h3 class="section-header">Pain & Injury Details</h3>
+                        <div class="detail-card">
+                            ${session.aggravates ? `
+                            <div class="detail-row">
+                                <div class="detail-label">Aggravates Pain</div>
+                                <div class="detail-value">${session.aggravates}</div>
+                            </div>` : ''}
+                            ${session.swelling ? `
+                            <div class="detail-row">
+                                <div class="detail-label">Swelling</div>
+                                <div class="detail-value">${session.swelling}</div>
+                            </div>` : ''}
+                            ${session.injurySite ? `
+                            <div class="detail-row">
+                                <div class="detail-label">Injury Sites</div>
+                                <div class="detail-value">${session.injurySite}</div>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (session.medications && session.medications.length > 0 && session.medications.some(m => m.medication)) {
+                html += `
+                    <div class="form-section">
+                        <h3 class="section-header">Medications</h3>
+                        <div class="detail-card">
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Medication</th>
+                                        <th>Since</th>
+                                        <th>Adverse Effects</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${session.medications.filter(m => m.medication).map(m => `
+                                        <tr>
+                                            <td>${m.medication || '-'}</td>
+                                            <td>${m.since || '-'}</td>
+                                            <td>${m.effects || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if ((session.healthcare && session.healthcare.length > 0 && session.healthcare.some(h => h.provider)) ||
+                (session.therapies && session.therapies.length > 0 && session.therapies.some(t => t.therapy))) {
+                html += `<div class="form-section"><h3 class="section-header">Current Care</h3>`;
+
+                if (session.healthcare && session.healthcare.some(h => h.provider)) {
+                    html += `
+                        <div class="detail-card" style="margin-bottom: 1rem;">
+                            <h4 style="margin-bottom: 0.75rem;">Healthcare Providers</h4>
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Provider</th>
+                                        <th>For</th>
+                                        <th>Treatment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${session.healthcare.filter(h => h.provider).map(h => `
+                                        <tr>
+                                            <td>${h.provider || '-'}</td>
+                                            <td>${h.condition || '-'}</td>
+                                            <td>${h.treatment || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                if (session.therapies && session.therapies.some(t => t.therapy)) {
+                    html += `
+                        <div class="detail-card">
+                            <h4 style="margin-bottom: 0.75rem;">Current Therapies</h4>
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Therapy</th>
+                                        <th>Since</th>
+                                        <th>Results</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${session.therapies.filter(t => t.therapy).map(t => `
+                                        <tr>
+                                            <td>${t.therapy || '-'}</td>
+                                            <td>${t.since || '-'}</td>
+                                            <td>${t.results || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+
+            if (session.implants || (session.injuries && session.injuries.some(i => i.injury)) ||
+                (session.operations && session.operations.some(o => o.operation))) {
+                html += `<div class="form-section"><h3 class="section-header">Medical History</h3>`;
+
+                if (session.implants) {
+                    html += `
+                        <div class="detail-card" style="margin-bottom: 1rem;">
+                            <div class="detail-row">
+                                <div class="detail-label">Pacemaker/Implants</div>
+                                <div class="detail-value">${session.implants}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (session.injuries && session.injuries.some(i => i.injury)) {
+                    html += `
+                        <div class="detail-card" style="margin-bottom: 1rem;">
+                            <h4 style="margin-bottom: 0.75rem;">Injuries & Conditions</h4>
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Injury/Condition</th>
+                                        <th>Since</th>
+                                        <th>Complications</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${session.injuries.filter(i => i.injury).map(i => `
+                                        <tr>
+                                            <td>${i.injury || '-'}</td>
+                                            <td>${i.since || '-'}</td>
+                                            <td>${i.complications || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                if (session.operations && session.operations.some(o => o.operation)) {
+                    html += `
+                        <div class="detail-card">
+                            <h4 style="margin-bottom: 0.75rem;">Operations</h4>
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Operation</th>
+                                        <th>When</th>
+                                        <th>Complications</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${session.operations.filter(o => o.operation).map(o => `
+                                        <tr>
+                                            <td>${o.operation || '-'}</td>
+                                            <td>${o.when || '-'}</td>
+                                            <td>${o.complications || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+
+            if (session.exercise || session.bowenHistory || session.additional) {
+                html += `
+                    <div class="form-section">
+                        <h3 class="section-header">Lifestyle & Additional Information</h3>
+                        <div class="detail-card">
+                            ${session.exercise ? `
+                            <div class="detail-row">
+                                <div class="detail-label">Exercise</div>
+                                <div class="detail-value">${session.exercise}</div>
+                            </div>` : ''}
+                            ${session.bowenHistory ? `
+                            <div class="detail-row">
+                                <div class="detail-label">Bowen History</div>
+                                <div class="detail-value">${session.bowenHistory}</div>
+                            </div>` : ''}
+                            ${session.additional ? `
+                            <div class="detail-row">
+                                <div class="detail-label">Additional Info</div>
+                                <div class="detail-value">${session.additional}</div>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (session.notes) {
+                html += `
+                    <div class="notes-section">
+                        <div class="notes-header">
+                            <h3 style="font-size: 1rem; font-weight: 600; margin: 0;">Therapist Notes</h3>
+                        </div>
+                        <div class="notes-content">${session.notes}</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('sessionDetailContent').innerHTML = html;
+            showView('sessionDetail');
+        }
+
+        function editCurrentSession() {
+            const session = sessions.find(s => s.id === currentSessionId);
+            const client = clients.find(c => c.id === session.clientId);
+
+            document.getElementById('sessionFormTitle').textContent = `Edit Session for ${client.name}`;
+            document.getElementById('sessionId').value = session.id;
+            document.getElementById('sessionClientId').value = session.clientId;
+            document.getElementById('sessionDate').value = session.date;
+            document.getElementById('sessionPractitioner').value = session.practitioner || '';
+            document.getElementById('sessionAggravates').value = session.aggravates || '';
+            document.getElementById('sessionSwelling').value = session.swelling || '';
+            document.getElementById('sessionInjurySite').value = session.injurySite || '';
+            document.getElementById('sessionImplants').value = session.implants || '';
+            document.getElementById('sessionExercise').value = session.exercise || '';
+            document.getElementById('sessionBowenHistory').value = session.bowenHistory || '';
+            document.getElementById('sessionAdditional').value = session.additional || '';
+            document.getElementById('sessionNotes').value = session.notes || '';
+
+            setTableData('complaintsTable', session.complaints, 'complaintsBody');
+            setTableData('medicationsTable', session.medications, 'medicationsBody');
+            setTableData('healthcareTable', session.healthcare, 'healthcareBody');
+            setTableData('therapiesTable', session.therapies, 'therapiesBody');
+            setTableData('injuriesTable', session.injuries, 'injuriesBody');
+            setTableData('operationsTable', session.operations, 'operationsBody');
+
+            showView('newSession');
+        }
+
+        function deleteCurrentSession() {
+            if (confirm('Are you sure you want to delete this session?')) {
+                const session = sessions.find(s => s.id === currentSessionId);
+                sessions = sessions.filter(s => s.id !== currentSessionId);
+                localStorage.setItem('sessions', JSON.stringify(sessions));
+                showToast('Session deleted successfully!', 'success');
+                viewClient(session.clientId);
+            }
+        }
+
+        function backToClientDetail() {
+            if (currentClientId) {
+                viewClient(currentClientId);
+            } else {
+                showView('clients');
+            }
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

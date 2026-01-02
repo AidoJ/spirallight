@@ -8,16 +8,56 @@ let currentClientId = null;
 let currentSessionId = null;
 
 /**
+ * Wait for Supabase library to load
+ */
+function waitForSupabase(maxAttempts = 10, delay = 100) {
+    return new Promise((resolve, reject) => {
+        let attempts = 0;
+        const checkSupabase = () => {
+            attempts++;
+            if (typeof supabase !== 'undefined') {
+                resolve(true);
+            } else if (attempts >= maxAttempts) {
+                reject(new Error('Supabase library failed to load'));
+            } else {
+                setTimeout(checkSupabase, delay);
+            }
+        };
+        checkSupabase();
+    });
+}
+
+/**
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', async function() {
+    // Wait for Supabase library to load
+    try {
+        await waitForSupabase();
+        console.log('Supabase library loaded');
+    } catch (error) {
+        console.error('Failed to load Supabase library:', error);
+        document.body.innerHTML = `
+            <div style="padding: 3rem; text-align: center;">
+                <h1>Loading Error</h1>
+                <p>Failed to load Supabase library. Please check your internet connection.</p>
+                <p>Error: ${error.message}</p>
+            </div>
+        `;
+        return;
+    }
+
     // Initialize Supabase
     if (!initSupabase()) {
         document.body.innerHTML = `
             <div style="padding: 3rem; text-align: center;">
                 <h1>Configuration Error</h1>
                 <p>Please configure Supabase in <code>js/config.js</code></p>
+                <p>Make sure you've added your Supabase anon key.</p>
                 <p>See <code>SETUP.md</code> for instructions.</p>
+                <p style="margin-top: 1rem; color: #666; font-size: 0.875rem;">
+                    Current config: ${JSON.stringify(SUPABASE_CONFIG, null, 2)}
+                </p>
             </div>
         `;
         return;

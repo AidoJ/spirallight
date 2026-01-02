@@ -10,11 +10,28 @@ let supabaseClient = null;
  * Initialize Supabase client
  */
 function initSupabase() {
-    if (!SUPABASE_CONFIG || !SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey || SUPABASE_CONFIG.anonKey === 'YOUR_SUPABASE_ANON_KEY') {
+    console.log('Initializing Supabase...');
+    console.log('SUPABASE_CONFIG:', SUPABASE_CONFIG);
+    console.log('supabase library available:', typeof supabase !== 'undefined');
+
+    if (!SUPABASE_CONFIG) {
+        console.error('SUPABASE_CONFIG is not defined');
+        return false;
+    }
+
+    if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
         console.error('Supabase configuration missing. Please set up config.js');
         console.error('Current config:', SUPABASE_CONFIG);
         if (typeof showToast !== 'undefined') {
             showToast('Please configure Supabase in js/config.js - Add your anon key', 'error');
+        }
+        return false;
+    }
+
+    if (SUPABASE_CONFIG.anonKey === 'YOUR_SUPABASE_ANON_KEY') {
+        console.error('Supabase anon key not configured. Please add your anon key to js/config.js');
+        if (typeof showToast !== 'undefined') {
+            showToast('Please add your Supabase anon key to js/config.js', 'error');
         }
         return false;
     }
@@ -30,9 +47,11 @@ function initSupabase() {
     try {
         supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         console.log('Supabase client initialized successfully');
+        console.log('Client object:', supabaseClient);
         return true;
     } catch (error) {
         console.error('Failed to initialize Supabase:', error);
+        console.error('Error details:', error.message, error.stack);
         if (typeof showToast !== 'undefined') {
             showToast('Failed to connect to database: ' + error.message, 'error');
         }

@@ -64,8 +64,24 @@ function initSupabase() {
  */
 function ensureInitialized() {
     if (!supabaseClient) {
-        const error = new Error('Supabase client not initialized. Please check your configuration.');
+        console.error('Supabase client is null. Attempting to re-initialize...');
+        console.error('SUPABASE_CONFIG:', SUPABASE_CONFIG);
+        console.error('supabase library available:', typeof supabase !== 'undefined');
+        
+        // Try to re-initialize
+        if (typeof supabase !== 'undefined' && SUPABASE_CONFIG && SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey) {
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                console.log('Re-initialized Supabase client successfully');
+                return { error: null };
+            } catch (error) {
+                console.error('Failed to re-initialize:', error);
+            }
+        }
+        
+        const error = new Error('Supabase client not initialized. Please check your configuration and refresh the page.');
         console.error(error);
+        console.error('Stack trace:', new Error().stack);
         return { error };
     }
     return { error: null };

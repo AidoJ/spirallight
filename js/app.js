@@ -48,7 +48,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Initialize Supabase
-    if (!initSupabase()) {
+    const initResult = initSupabase();
+    console.log('initSupabase result:', initResult);
+    console.log('supabaseClient after init:', supabaseClient);
+    
+    if (!initResult) {
         document.body.innerHTML = `
             <div style="padding: 3rem; text-align: center;">
                 <h1>Configuration Error</h1>
@@ -58,10 +62,28 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <p style="margin-top: 1rem; color: #666; font-size: 0.875rem;">
                     Current config: ${JSON.stringify(SUPABASE_CONFIG, null, 2)}
                 </p>
+                <p style="margin-top: 1rem; color: #666; font-size: 0.875rem;">
+                    Check the browser console (F12) for more details.
+                </p>
             </div>
         `;
         return;
     }
+
+    // Verify client is actually set
+    if (!supabaseClient) {
+        console.error('initSupabase returned true but supabaseClient is still null!');
+        document.body.innerHTML = `
+            <div style="padding: 3rem; text-align: center;">
+                <h1>Initialization Error</h1>
+                <p>Supabase client failed to initialize. Please check the console for details.</p>
+                <p>Try refreshing the page.</p>
+            </div>
+        `;
+        return;
+    }
+
+    console.log('App initialized successfully. Supabase client ready.');
 
     // Check if this is a client intake link
     const urlParams = new URLSearchParams(window.location.search);

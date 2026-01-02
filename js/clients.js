@@ -134,6 +134,21 @@ const searchClients = debounce(async function() {
 async function saveClient(e) {
     e.preventDefault();
 
+    // Check if Supabase is initialized
+    if (typeof supabaseClient === 'undefined' || supabaseClient === null) {
+        console.error('Supabase client not initialized. Attempting to initialize...');
+        if (typeof initSupabase === 'function') {
+            const initialized = initSupabase();
+            if (!initialized) {
+                showToast('Database not ready. Please refresh the page and try again.', 'error');
+                return;
+            }
+        } else {
+            showToast('Database not ready. Please refresh the page.', 'error');
+            return;
+        }
+    }
+
     const form = e.target;
     const submitButton = form.querySelector('button[type="submit"]');
     const originalText = submitButton.textContent;
@@ -178,7 +193,8 @@ async function saveClient(e) {
         showView('clients');
     } catch (error) {
         console.error('Error saving client:', error);
-        showToast('Failed to save client. Please try again.', 'error');
+        const errorMessage = error.message || 'Failed to save client. Please try again.';
+        showToast(errorMessage, 'error');
     } finally {
         submitButton.disabled = false;
         submitButton.textContent = originalText;

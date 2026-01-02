@@ -22,37 +22,84 @@ async function showClientIntakeForm(clientId) {
             return;
         }
 
+        console.log('Showing intake form for client:', clientId);
+        
         // Hide all other views and show intake form
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => {
+            v.classList.remove('active');
+            console.log('Removed active from view:', v.id);
+        });
+        document.querySelectorAll('.nav-tab').forEach(t => {
+            t.classList.remove('active');
+            t.style.display = 'none'; // Hide all nav tabs
+        });
         
-        // Hide navigation
+        // Hide navigation completely
         const nav = document.querySelector('.nav');
-        if (nav) nav.style.display = 'none';
+        if (nav) {
+            nav.style.display = 'none';
+            console.log('Navigation hidden');
+        }
         
-        // Hide header or customize it
+        // Keep header but customize it
         const header = document.querySelector('.header');
         if (header) {
-            header.querySelector('.logo h1').textContent = 'Spiral Light Healing';
-            header.querySelector('.logo p').textContent = 'Client Intake Form';
+            const logoH1 = header.querySelector('.logo h1');
+            const logoP = header.querySelector('.logo p');
+            if (logoH1) logoH1.textContent = 'Spiral Light Healing';
+            if (logoP) logoP.textContent = 'Client Intake Form';
+            console.log('Header customized');
         }
 
         const intakeView = document.getElementById('clientIntakeView');
-        if (intakeView) {
-            intakeView.classList.add('active');
-            document.getElementById('intakeClientId').value = clientId;
-            
-            // Set today's date as minimum and default
-            const today = new Date().toISOString().split('T')[0];
-            const sessionDateInput = document.getElementById('intakeSessionDate');
-            if (sessionDateInput) {
-                sessionDateInput.setAttribute('min', today);
-                sessionDateInput.value = today;
-            }
-
-            // Initialize intake form tables with one empty row each
-            resetIntakeForm();
+        console.log('Intake view element:', intakeView);
+        
+        if (!intakeView) {
+            console.error('clientIntakeView element not found!');
+            document.body.innerHTML = `
+                <div style="padding: 3rem; text-align: center; font-family: 'Inter', sans-serif;">
+                    <h1 style="color: var(--danger); margin-bottom: 1rem;">Error</h1>
+                    <p style="color: var(--text-secondary);">Intake form view not found. Please contact support.</p>
+                </div>
+            `;
+            return;
         }
+
+        // Show the intake view - force it to be visible
+        intakeView.classList.add('active');
+        intakeView.style.display = 'block';
+        console.log('Intake view activated and displayed');
+        
+        // Double-check that clientsView is hidden
+        const clientsView = document.getElementById('clientsView');
+        if (clientsView) {
+            clientsView.classList.remove('active');
+            clientsView.style.display = 'none';
+            console.log('Clients view hidden');
+        }
+        
+        const intakeClientIdInput = document.getElementById('intakeClientId');
+        if (intakeClientIdInput) {
+            intakeClientIdInput.value = clientId;
+            console.log('Client ID set:', clientId);
+        } else {
+            console.error('intakeClientId input not found!');
+        }
+        
+        // Set today's date as minimum and default
+        const today = new Date().toISOString().split('T')[0];
+        const sessionDateInput = document.getElementById('intakeSessionDate');
+        if (sessionDateInput) {
+            sessionDateInput.setAttribute('min', today);
+            sessionDateInput.value = today;
+            console.log('Session date set to:', today);
+        } else {
+            console.error('intakeSessionDate input not found!');
+        }
+
+        // Initialize intake form tables with one empty row each
+        resetIntakeForm();
+        console.log('Intake form reset and ready');
     } catch (error) {
         console.error('Error loading intake form:', error);
         document.body.innerHTML = `

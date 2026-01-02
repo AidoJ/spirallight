@@ -1134,6 +1134,246 @@
                     <div id="sessionDetailContent"></div>
                 </div>
             </div>
+
+            <!-- Client Intake Form View (Public-facing) -->
+            <div id="clientIntakeView" class="view">
+                <div class="card">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 2rem;">✨</span>
+                            <h1 style="font-size: 1.75rem; color: var(--primary);">Spiral Light Healing</h1>
+                        </div>
+                        <p style="color: var(--text-secondary);">Please complete your intake form before your appointment</p>
+                    </div>
+
+                    <div id="clientIntakeContent">
+                        <form id="clientIntakeForm" onsubmit="submitClientIntake(event)">
+                            <input type="hidden" id="intakeClientId">
+
+                            <div class="form-section">
+                                <h3 class="section-header">Session Information</h3>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label required">Appointment Date</label>
+                                        <input type="date" class="form-input" id="intakeSessionDate" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-header">Chief Complaints</h3>
+                                <div class="table-input">
+                                    <table id="intakeComplaintsTable">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 35%;">Chief Complaint</th>
+                                                <th style="width: 20%;">Since?</th>
+                                                <th style="width: 25%;">Causes?</th>
+                                                <th style="width: 15%;">Severity (1-10)</th>
+                                                <th style="width: 5%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="intakeComplaintsBody">
+                                            <tr>
+                                                <td><input type="text" placeholder="Describe complaint"></td>
+                                                <td><input type="text" placeholder="When did it start?"></td>
+                                                <td><input type="text" placeholder="What caused it?"></td>
+                                                <td><input type="number" min="1" max="10" placeholder="1-10"></td>
+                                                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-ghost add-row-btn" onclick="addIntakeComplaintRow()">+ Add Row</button>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-header">Pain & Injury Details</h3>
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label class="form-label">What aggravates your pain?</label>
+                                        <textarea class="form-textarea" id="intakeAggravates"></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label class="form-label">Are you experiencing any swelling? Where?</label>
+                                        <textarea class="form-textarea" id="intakeSwelling"></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label class="form-label">Indicate injury site and areas of pain</label>
+                                        <textarea class="form-textarea" id="intakeInjurySite"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-header">Medications</h3>
+                                <div class="table-input">
+                                    <table id="intakeMedicationsTable">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 35%;">Medication</th>
+                                                <th style="width: 25%;">Since?</th>
+                                                <th style="width: 35%;">Adverse Effects?</th>
+                                                <th style="width: 5%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="intakeMedicationsBody">
+                                            <tr>
+                                                <td><input type="text" placeholder="Medication name"></td>
+                                                <td><input type="text" placeholder="How long?"></td>
+                                                <td><input type="text" placeholder="Any side effects?"></td>
+                                                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-ghost add-row-btn" onclick="addIntakeMedicationRow()">+ Add Row</button>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-header">Current Healthcare</h3>
+                                <div class="table-input">
+                                    <table id="intakeHealthcareTable">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 30%;">Healthcare Provider</th>
+                                                <th style="width: 30%;">For (Condition)</th>
+                                                <th style="width: 35%;">Treatment</th>
+                                                <th style="width: 5%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="intakeHealthcareBody">
+                                            <tr>
+                                                <td><input type="text" placeholder="Provider name"></td>
+                                                <td><input type="text" placeholder="Condition"></td>
+                                                <td><input type="text" placeholder="Treatment type"></td>
+                                                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-ghost add-row-btn" onclick="addIntakeHealthcareRow()">+ Add Row</button>
+                                </div>
+
+                                <div class="table-input" style="margin-top: 1rem;">
+                                    <table id="intakeTherapiesTable">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 35%;">Current Therapy/Treatment</th>
+                                                <th style="width: 25%;">Since?</th>
+                                                <th style="width: 35%;">Results?</th>
+                                                <th style="width: 5%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="intakeTherapiesBody">
+                                            <tr>
+                                                <td><input type="text" placeholder="Therapy type"></td>
+                                                <td><input type="text" placeholder="How long?"></td>
+                                                <td><input type="text" placeholder="Effectiveness"></td>
+                                                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-ghost add-row-btn" onclick="addIntakeTherapyRow()">+ Add Row</button>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-header">Medical History</h3>
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label class="form-label">Do you have a pacemaker or any implants including orthotics?</label>
+                                        <input type="text" class="form-input" id="intakeImplants">
+                                    </div>
+                                </div>
+
+                                <div class="table-input" style="margin-top: 1rem;">
+                                    <table id="intakeInjuriesTable">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 35%;">Other Injuries/Conditions</th>
+                                                <th style="width: 25%;">Since?</th>
+                                                <th style="width: 35%;">Complications?</th>
+                                                <th style="width: 5%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="intakeInjuriesBody">
+                                            <tr>
+                                                <td><input type="text" placeholder="Injury or condition"></td>
+                                                <td><input type="text" placeholder="When?"></td>
+                                                <td><input type="text" placeholder="Effects"></td>
+                                                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-ghost add-row-btn" onclick="addIntakeInjuryRow()">+ Add Row</button>
+                                </div>
+
+                                <div class="table-input" style="margin-top: 1rem;">
+                                    <table id="intakeOperationsTable">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 40%;">Operations</th>
+                                                <th style="width: 25%;">When?</th>
+                                                <th style="width: 30%;">Complications?</th>
+                                                <th style="width: 5%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="intakeOperationsBody">
+                                            <tr>
+                                                <td><input type="text" placeholder="Operation type"></td>
+                                                <td><input type="text" placeholder="Date/Year"></td>
+                                                <td><input type="text" placeholder="Any complications?"></td>
+                                                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-ghost add-row-btn" onclick="addIntakeOperationRow()">+ Add Row</button>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-header">Lifestyle</h3>
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label class="form-label">What exercise(s) do you do, how much, and how often?</label>
+                                        <textarea class="form-textarea" id="intakeExercise"></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label class="form-label">Have you been treated with Bowen before?</label>
+                                        <textarea class="form-textarea" id="intakeBowenHistory" rows="2"></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label class="form-label">Is there anything you would like to add?</label>
+                                        <textarea class="form-textarea" id="intakeAdditional" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                                <p style="font-size: 0.875rem; line-height: 1.6; margin: 0;">
+                                    By submitting this form, I confirm that the information provided is accurate and complete to the best of my knowledge.
+                                    I understand this information will be reviewed by my therapist before my appointment.
+                                </p>
+                            </div>
+
+                            <div style="text-align: center;">
+                                <button type="submit" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 3rem;">
+                                    Submit Intake Form
+                                </button>
+                            </div>
+                        </form>
+
+                        <div id="intakeSuccessMessage" style="display: none; text-align: center; padding: 3rem;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                            <h2 style="color: var(--secondary); margin-bottom: 1rem;">Thank You!</h2>
+                            <p style="color: var(--text-secondary); font-size: 1.125rem;">
+                                Your intake form has been submitted successfully.<br>
+                                Your therapist will review it before your appointment.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -1146,9 +1386,17 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            displayClients();
-            // Set today's date as default for new sessions
-            document.getElementById('sessionDate').valueAsDate = new Date();
+            // Check if this is a client intake link
+            const urlParams = new URLSearchParams(window.location.search);
+            const clientToken = urlParams.get('client');
+
+            if (clientToken) {
+                showClientIntakeForm(clientToken);
+            } else {
+                displayClients();
+                // Set today's date as default for new sessions
+                document.getElementById('sessionDate').valueAsDate = new Date();
+            }
         });
 
         // Auto-calculate age from DOB
@@ -1334,9 +1582,9 @@
         function viewClient(id) {
             currentClientId = id;
             const client = clients.find(c => c.id === id);
-            const clientSessions = sessions.filter(s => s.clientId === id).sort((a, b) =>
-                new Date(b.date) - new Date(a.date)
-            );
+            const allSessions = sessions.filter(s => s.clientId === id);
+            const pendingSessions = allSessions.filter(s => s.status === 'pending').sort((a, b) => new Date(b.date) - new Date(a.date));
+            const approvedSessions = allSessions.filter(s => s.status !== 'pending').sort((a, b) => new Date(b.date) - new Date(a.date));
 
             document.getElementById('clientDetailName').textContent = client.name;
             document.getElementById('clientDetailContent').innerHTML = `
@@ -1386,10 +1634,94 @@
                         </div>` : ''}
                     </div>
                 </div>
+
+                <div class="detail-card" style="margin-top: 1rem; background: linear-gradient(135deg, rgba(0, 170, 187, 0.1) 0%, rgba(51, 200, 213, 0.1) 100%); border: 2px dashed var(--primary);">
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: var(--primary);">📧 Client Intake Link</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.875rem;">
+                        Send this link to ${client.name} so they can fill out their intake form before their appointment.
+                    </p>
+                    <button class="btn btn-primary" onclick="generateClientLink()">
+                        📋 Generate & Copy Link
+                    </button>
+                </div>
             `;
 
-            displaySessions(clientSessions);
+            // Display pending sessions first if any
+            if (pendingSessions.length > 0) {
+                displayPendingSessions(pendingSessions);
+            }
+
+            displaySessions(approvedSessions);
             showView('clientDetail');
+        }
+
+        function displayPendingSessions(pendingSessions) {
+            const sessionList = document.getElementById('sessionList');
+
+            let pendingHTML = `
+                <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="color: #f59e0b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>⏳</span> Pending Client Submissions (${pendingSessions.length})
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.875rem;">
+                        These intake forms were submitted by the client and are awaiting your review and approval.
+                    </p>
+                    <div style="display: grid; gap: 1rem;">
+            `;
+
+            pendingSessions.forEach(session => {
+                pendingHTML += `
+                    <div style="background: white; border-radius: 8px; padding: 1rem; border-left: 4px solid #f59e0b;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">
+                                    Appointment: ${new Date(session.date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                    Submitted: ${new Date(session.createdAt).toLocaleString()}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary" onclick="event.stopPropagation(); viewSession('${session.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                    👁️ Review
+                                </button>
+                                <button class="btn btn-primary" onclick="event.stopPropagation(); approveSession('${session.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                    ✓ Approve
+                                </button>
+                                <button class="btn btn-danger" onclick="event.stopPropagation(); deletePendingSession('${session.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                        ${session.complaints && session.complaints.length > 0 && session.complaints.some(c => c.complaint) ? `
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                <strong>Chief Complaints:</strong> ${session.complaints.filter(c => c.complaint).map(c => c.complaint).join(', ')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            pendingHTML += `
+                    </div>
+                </div>
+            `;
+
+            // Insert before the session list
+            const container = sessionList.parentElement;
+            const existingPending = container.querySelector('.pending-sessions-container');
+            if (existingPending) {
+                existingPending.remove();
+            }
+
+            const pendingDiv = document.createElement('div');
+            pendingDiv.className = 'pending-sessions-container';
+            pendingDiv.innerHTML = pendingHTML;
+            container.insertBefore(pendingDiv, sessionList.parentElement.querySelector('.section-header').nextSibling);
         }
 
         function displaySessions(clientSessions) {
@@ -1399,8 +1731,8 @@
                 sessionList.innerHTML = `
                     <div class="empty-state" style="padding: 2rem;">
                         <div class="empty-icon" style="font-size: 3rem;">📋</div>
-                        <h3>No sessions yet</h3>
-                        <p>Create the first session for this client</p>
+                        <h3>No approved sessions yet</h3>
+                        <p>Approved sessions will appear here</p>
                     </div>
                 `;
                 return;
@@ -1445,10 +1777,14 @@
         function saveSession(e) {
             e.preventDefault();
 
+            const existingSession = document.getElementById('sessionId').value ?
+                sessions.find(s => s.id === document.getElementById('sessionId').value) : null;
+
             const session = {
                 id: document.getElementById('sessionId').value || Date.now().toString(),
                 clientId: document.getElementById('sessionClientId').value,
                 date: document.getElementById('sessionDate').value,
+                status: existingSession ? existingSession.status : 'approved', // Therapist-created sessions are auto-approved
                 practitioner: document.getElementById('sessionPractitioner').value,
                 complaints: getTableData('complaintsTable'),
                 aggravates: document.getElementById('sessionAggravates').value,
@@ -1464,9 +1800,7 @@
                 bowenHistory: document.getElementById('sessionBowenHistory').value,
                 additional: document.getElementById('sessionAdditional').value,
                 notes: document.getElementById('sessionNotes').value,
-                createdAt: document.getElementById('sessionId').value ?
-                    sessions.find(s => s.id === document.getElementById('sessionId').value).createdAt :
-                    new Date().toISOString(),
+                createdAt: existingSession ? existingSession.createdAt : new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
 
@@ -2019,6 +2353,254 @@
             setTimeout(() => {
                 toast.remove();
             }, 3000);
+        }
+
+        // Client Intake Functions
+        function showClientIntakeForm(clientId) {
+            const client = clients.find(c => c.id === clientId);
+
+            if (!client) {
+                document.body.innerHTML = `
+                    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+                        <div style="text-align: center;">
+                            <h1 style="font-size: 3rem; margin-bottom: 1rem;">❌</h1>
+                            <h2 style="color: #ef4444; margin-bottom: 0.5rem;">Invalid Link</h2>
+                            <p style="color: #64748b;">This intake form link is not valid or has expired.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('clientIntakeView').classList.add('active');
+            document.getElementById('intakeClientId').value = clientId;
+
+            // Hide header and nav
+            document.querySelector('.header').style.display = 'none';
+            document.querySelector('.nav').style.display = 'none';
+
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('intakeSessionDate').setAttribute('min', today);
+            document.getElementById('intakeSessionDate').value = today;
+        }
+
+        function submitClientIntake(e) {
+            e.preventDefault();
+
+            const clientId = document.getElementById('intakeClientId').value;
+
+            const session = {
+                id: Date.now().toString(),
+                clientId: clientId,
+                date: document.getElementById('intakeSessionDate').value,
+                status: 'pending', // Pending therapist approval
+                complaints: getIntakeTableData('intakeComplaintsTable'),
+                aggravates: document.getElementById('intakeAggravates').value,
+                swelling: document.getElementById('intakeSwelling').value,
+                injurySite: document.getElementById('intakeInjurySite').value,
+                medications: getIntakeTableData('intakeMedicationsTable'),
+                healthcare: getIntakeTableData('intakeHealthcareTable'),
+                therapies: getIntakeTableData('intakeTherapiesTable'),
+                implants: document.getElementById('intakeImplants').value,
+                injuries: getIntakeTableData('intakeInjuriesTable'),
+                operations: getIntakeTableData('intakeOperationsTable'),
+                exercise: document.getElementById('intakeExercise').value,
+                bowenHistory: document.getElementById('intakeBowenHistory').value,
+                additional: document.getElementById('intakeAdditional').value,
+                notes: '',
+                practitioner: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            sessions.push(session);
+            localStorage.setItem('sessions', JSON.stringify(sessions));
+
+            // Show success message
+            document.getElementById('clientIntakeForm').style.display = 'none';
+            document.getElementById('intakeSuccessMessage').style.display = 'block';
+        }
+
+        function getIntakeTableData(tableId) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+            const data = [];
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const rowData = {};
+                inputs.forEach((input, index) => {
+                    if (input.value.trim()) {
+                        rowData[`col${index}`] = input.value;
+                    }
+                });
+                if (Object.keys(rowData).length > 0) {
+                    data.push(rowData);
+                }
+            });
+
+            if (tableId === 'intakeComplaintsTable') {
+                return data.map(d => ({
+                    complaint: d.col0,
+                    since: d.col1,
+                    causes: d.col2,
+                    severity: d.col3
+                }));
+            } else if (tableId === 'intakeMedicationsTable') {
+                return data.map(d => ({
+                    medication: d.col0,
+                    since: d.col1,
+                    effects: d.col2
+                }));
+            } else if (tableId === 'intakeHealthcareTable') {
+                return data.map(d => ({
+                    provider: d.col0,
+                    condition: d.col1,
+                    treatment: d.col2
+                }));
+            } else if (tableId === 'intakeTherapiesTable') {
+                return data.map(d => ({
+                    therapy: d.col0,
+                    since: d.col1,
+                    results: d.col2
+                }));
+            } else if (tableId === 'intakeInjuriesTable') {
+                return data.map(d => ({
+                    injury: d.col0,
+                    since: d.col1,
+                    complications: d.col2
+                }));
+            } else if (tableId === 'intakeOperationsTable') {
+                return data.map(d => ({
+                    operation: d.col0,
+                    when: d.col1,
+                    complications: d.col2
+                }));
+            }
+
+            return data;
+        }
+
+        // Client intake table row functions
+        function addIntakeComplaintRow() {
+            const tbody = document.getElementById('intakeComplaintsBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Describe complaint"></td>
+                <td><input type="text" placeholder="When did it start?"></td>
+                <td><input type="text" placeholder="What caused it?"></td>
+                <td><input type="number" min="1" max="10" placeholder="1-10"></td>
+                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addIntakeMedicationRow() {
+            const tbody = document.getElementById('intakeMedicationsBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Medication name"></td>
+                <td><input type="text" placeholder="How long?"></td>
+                <td><input type="text" placeholder="Any side effects?"></td>
+                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addIntakeHealthcareRow() {
+            const tbody = document.getElementById('intakeHealthcareBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Provider name"></td>
+                <td><input type="text" placeholder="Condition"></td>
+                <td><input type="text" placeholder="Treatment type"></td>
+                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addIntakeTherapyRow() {
+            const tbody = document.getElementById('intakeTherapiesBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Therapy type"></td>
+                <td><input type="text" placeholder="How long?"></td>
+                <td><input type="text" placeholder="Effectiveness"></td>
+                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addIntakeInjuryRow() {
+            const tbody = document.getElementById('intakeInjuriesBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Injury or condition"></td>
+                <td><input type="text" placeholder="When?"></td>
+                <td><input type="text" placeholder="Effects"></td>
+                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addIntakeOperationRow() {
+            const tbody = document.getElementById('intakeOperationsBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Operation type"></td>
+                <td><input type="text" placeholder="Date/Year"></td>
+                <td><input type="text" placeholder="Any complications?"></td>
+                <td><button type="button" onclick="removeIntakeTableRow(this)" class="btn-ghost" style="padding: 0.25rem;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function removeIntakeTableRow(btn) {
+            const row = btn.closest('tr');
+            const tbody = row.parentElement;
+            if (tbody.children.length > 1) {
+                row.remove();
+            } else {
+                row.querySelectorAll('input').forEach(input => input.value = '');
+            }
+        }
+
+        // Generate client intake link
+        function generateClientLink() {
+            const baseUrl = window.location.origin + window.location.pathname;
+            const clientLink = `${baseUrl}?client=${currentClientId}`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(clientLink).then(() => {
+                showToast('Client intake link copied to clipboard!', 'success');
+            }).catch(() => {
+                // Fallback: show the link in a prompt
+                prompt('Client Intake Link (copy this):', clientLink);
+            });
+        }
+
+        // Approve pending session
+        function approveSession(sessionId) {
+            const session = sessions.find(s => s.id === sessionId);
+            if (session) {
+                session.status = 'approved';
+                session.updatedAt = new Date().toISOString();
+                localStorage.setItem('sessions', JSON.stringify(sessions));
+                showToast('Session approved successfully!', 'success');
+                viewClient(session.clientId);
+            }
+        }
+
+        // Delete pending session
+        function deletePendingSession(sessionId) {
+            if (confirm('Are you sure you want to delete this pending session?')) {
+                const session = sessions.find(s => s.id === sessionId);
+                sessions = sessions.filter(s => s.id !== sessionId);
+                localStorage.setItem('sessions', JSON.stringify(sessions));
+                showToast('Pending session deleted!', 'success');
+                viewClient(session.clientId);
+            }
         }
     </script>
 </body>

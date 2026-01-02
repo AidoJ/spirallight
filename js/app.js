@@ -30,9 +30,25 @@ function waitForSupabase(maxAttempts = 10, delay = 100) {
 /**
  * Initialize the application
  */
+// Check for intake form link IMMEDIATELY (before DOMContentLoaded)
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientToken = urlParams.get('client');
+    
+    if (clientToken && clientToken.trim() !== '') {
+        console.log('=== INTAKE LINK DETECTED (PRE-DOM) ===');
+        console.log('Client token:', clientToken);
+        window.isIntakeFormMode = true;
+        // Prevent normal app from loading
+        window.skipNormalAppInit = true;
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('=== DOMContentLoaded fired ===');
     console.log('Full URL:', window.location.href);
+    console.log('isIntakeFormMode:', window.isIntakeFormMode);
+    console.log('skipNormalAppInit:', window.skipNormalAppInit);
     
     // Check if this is a client intake link FIRST (before any initialization)
     // Check multiple ways to get the client parameter
@@ -43,20 +59,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('Hash:', window.location.hash);
 
     // If it's an intake form link, handle it differently
-    if (clientToken && clientToken.trim() !== '') {
+    if ((clientToken && clientToken.trim() !== '') || window.isIntakeFormMode) {
+        const finalToken = clientToken || new URLSearchParams(window.location.search).get('client');
         console.log('=== CLIENT INTAKE LINK DETECTED ===');
-        console.log('Client token:', clientToken);
+        console.log('Client token:', finalToken);
         
         // Set a flag to prevent normal app initialization
         window.isIntakeFormMode = true;
+        window.skipNormalAppInit = true;
         
-        // IMMEDIATELY hide all views and navigation
+        // IMMEDIATELY hide all views and navigation - do this FIRST
         document.querySelectorAll('.view').forEach(v => {
             v.classList.remove('active');
             v.style.display = 'none';
+            v.style.visibility = 'hidden';
         });
         const nav = document.querySelector('.nav');
-        if (nav) nav.style.display = 'none';
+        if (nav) {
+            nav.style.display = 'none';
+            nav.style.visibility = 'hidden';
+        }
+        console.log('All views and nav hidden');
         
         // Wait for Supabase library to load
         try {
@@ -88,12 +111,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         // Show client intake form (skip normal app initialization)
-        console.log('Calling showClientIntakeForm...');
-        await showClientIntakeForm(clientToken);
+        console.log('Calling showClientIntakeForm with token:', finalToken);
+        await showClientIntakeForm(finalToken);
         console.log('showClientIntakeForm completed');
         
-        // Prevent any further initialization
+        // Prevent any further initialization - CRITICAL
         return; // Don't continue with normal app initialization
+    }
+    
+    // If we got here and skipNormalAppInit is set, don't continue
+    if (window.skipNormalAppInit) {
+        console.log('Skipping normal app init - intake form mode');
+        return;
     }
     
     // Set flag for normal app mode
@@ -153,6 +182,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     console.log('App initialized successfully. Supabase client ready.');
+
+    // Double-check we're not in intake mode
+    if (window.isIntakeFormMode || window.skipNormalAppInit) {
+        console.log('Aborting normal app init - still in intake mode');
+        return;
+    }
 
     // Show clients view
     const clientsView = document.getElementById('clientsView');

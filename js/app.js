@@ -156,14 +156,21 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     console.log('App initialized successfully. Supabase client ready.');
 
-    // Normal app flow
-    {
-        // Load clients and set default date
-        await loadClients();
-        const sessionDate = document.getElementById('sessionDate');
-        if (sessionDate) {
-            sessionDate.valueAsDate = new Date();
-        }
+    // Show clients view
+    const clientsView = document.getElementById('clientsView');
+    if (clientsView) {
+        clientsView.classList.add('active');
+    }
+
+    // Normal app flow - Load clients immediately
+    console.log('Loading clients...');
+    await loadClients();
+    console.log('Clients loaded, count:', clients.length);
+    
+    // Set default date for new sessions
+    const sessionDate = document.getElementById('sessionDate');
+    if (sessionDate) {
+        sessionDate.valueAsDate = new Date();
     }
 
     // Auto-calculate age from DOB

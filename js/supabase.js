@@ -10,26 +10,46 @@ let supabaseClient = null;
  * Initialize Supabase client
  */
 function initSupabase() {
-    if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
+    if (!SUPABASE_CONFIG || !SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey || SUPABASE_CONFIG.anonKey === 'YOUR_SUPABASE_ANON_KEY') {
         console.error('Supabase configuration missing. Please set up config.js');
-        showToast('Please configure Supabase in js/config.js', 'error');
+        console.error('Current config:', SUPABASE_CONFIG);
+        if (typeof showToast !== 'undefined') {
+            showToast('Please configure Supabase in js/config.js - Add your anon key', 'error');
+        }
         return false;
     }
 
     if (typeof supabase === 'undefined') {
         console.error('Supabase library not loaded. Make sure to include the Supabase script in index.html');
-        showToast('Supabase library not loaded', 'error');
+        if (typeof showToast !== 'undefined') {
+            showToast('Supabase library not loaded', 'error');
+        }
         return false;
     }
 
     try {
         supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        console.log('Supabase client initialized successfully');
         return true;
     } catch (error) {
         console.error('Failed to initialize Supabase:', error);
-        showToast('Failed to connect to database', 'error');
+        if (typeof showToast !== 'undefined') {
+            showToast('Failed to connect to database: ' + error.message, 'error');
+        }
         return false;
     }
+}
+
+/**
+ * Ensure Supabase client is initialized
+ */
+function ensureInitialized() {
+    if (!supabaseClient) {
+        const error = new Error('Supabase client not initialized. Please check your configuration.');
+        console.error(error);
+        return { error };
+    }
+    return { error: null };
 }
 
 /**
@@ -40,6 +60,9 @@ const ClientService = {
      * Get all clients
      */
     async getAll() {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const { data, error } = await supabaseClient
                 .from('clients')
@@ -58,6 +81,9 @@ const ClientService = {
      * Get a single client by ID
      */
     async getById(id) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const { data, error } = await supabaseClient
                 .from('clients')
@@ -77,6 +103,9 @@ const ClientService = {
      * Create a new client
      */
     async create(clientData) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             // Map camelCase to snake_case for database
             const dbData = {
@@ -111,6 +140,9 @@ const ClientService = {
      * Update an existing client
      */
     async update(id, clientData) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const dbData = {
                 name: clientData.name,
@@ -145,6 +177,9 @@ const ClientService = {
      * Delete a client
      */
     async delete(id) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { error: initCheck.error };
+
         try {
             const { error } = await supabaseClient
                 .from('clients')
@@ -163,6 +198,9 @@ const ClientService = {
      * Search clients
      */
     async search(query) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const { data, error } = await supabaseClient
                 .from('clients')
@@ -187,6 +225,9 @@ const SessionService = {
      * Get all sessions for a client
      */
     async getByClientId(clientId) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const { data, error } = await supabaseClient
                 .from('sessions')
@@ -206,6 +247,9 @@ const SessionService = {
      * Get a single session by ID
      */
     async getById(id) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const { data, error } = await supabaseClient
                 .from('sessions')
@@ -225,6 +269,9 @@ const SessionService = {
      * Create a new session
      */
     async create(sessionData) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const dbData = {
                 client_id: sessionData.clientId,
@@ -265,6 +312,9 @@ const SessionService = {
      * Update an existing session
      */
     async update(id, sessionData) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const dbData = {
                 date: sessionData.date,
@@ -305,6 +355,9 @@ const SessionService = {
      * Delete a session
      */
     async delete(id) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { error: initCheck.error };
+
         try {
             const { error } = await supabaseClient
                 .from('sessions')
@@ -323,6 +376,9 @@ const SessionService = {
      * Update session status
      */
     async updateStatus(id, status) {
+        const initCheck = ensureInitialized();
+        if (initCheck.error) return { data: null, error: initCheck.error };
+
         try {
             const { data, error } = await supabaseClient
                 .from('sessions')

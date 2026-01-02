@@ -35,12 +35,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('Full URL:', window.location.href);
     
     // Check if this is a client intake link FIRST (before any initialization)
+    // Check multiple ways to get the client parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const clientToken = urlParams.get('client');
+    const clientToken = urlParams.get('client') || urlParams.get('clientId') || new URLSearchParams(window.location.hash.substring(1)).get('client');
     console.log('Client token from URL:', clientToken);
+    console.log('Search params:', window.location.search);
+    console.log('Hash:', window.location.hash);
 
     // If it's an intake form link, handle it differently
-    if (clientToken) {
+    if (clientToken && clientToken.trim() !== '') {
         console.log('=== CLIENT INTAKE LINK DETECTED ===');
         console.log('Client token:', clientToken);
         console.log('Full URL:', window.location.href);

@@ -65,10 +65,11 @@ async function showClientIntakeForm(clientId) {
             return;
         }
 
-        // Show the intake view - force it to be visible
-        intakeView.classList.add('active');
-        intakeView.style.display = 'block';
-        console.log('Intake view activated and displayed');
+        // Force hide ALL other views first
+        document.querySelectorAll('.view').forEach(v => {
+            v.classList.remove('active');
+            v.style.display = 'none';
+        });
         
         // Double-check that clientsView is hidden
         const clientsView = document.getElementById('clientsView');
@@ -77,6 +78,25 @@ async function showClientIntakeForm(clientId) {
             clientsView.style.display = 'none';
             console.log('Clients view hidden');
         }
+
+        // Show the intake view - force it to be visible
+        intakeView.classList.add('active');
+        intakeView.style.display = 'block';
+        intakeView.style.visibility = 'visible';
+        intakeView.style.opacity = '1';
+        console.log('Intake view activated and displayed');
+        
+        // Verify it's actually visible
+        setTimeout(() => {
+            const isVisible = intakeView.classList.contains('active') && intakeView.style.display !== 'none';
+            console.log('Intake view visibility check:', isVisible);
+            if (!isVisible) {
+                console.error('Intake view is not visible! Forcing display...');
+                intakeView.style.display = 'block';
+                intakeView.style.visibility = 'visible';
+                intakeView.classList.add('active');
+            }
+        }, 100);
         
         const intakeClientIdInput = document.getElementById('intakeClientId');
         if (intakeClientIdInput) {

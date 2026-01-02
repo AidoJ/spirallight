@@ -37,7 +37,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // If it's an intake form link, handle it differently
     if (clientToken) {
-        console.log('Client intake link detected:', clientToken);
+        console.log('=== CLIENT INTAKE LINK DETECTED ===');
+        console.log('Client token:', clientToken);
+        console.log('Full URL:', window.location.href);
+        
+        // Set a flag to prevent normal app initialization
+        window.isIntakeFormMode = true;
         
         // Wait for Supabase library to load
         try {
@@ -56,6 +61,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Initialize Supabase for intake form
         const initResult = initSupabase();
+        console.log('Supabase init result:', initResult);
+        console.log('supabaseClient:', supabaseClient);
+        
         if (!initResult || !supabaseClient) {
             document.body.innerHTML = `
                 <div style="padding: 3rem; text-align: center; font-family: 'Inter', sans-serif;">
@@ -66,10 +74,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
+        // Hide the default clientsView immediately
+        const defaultView = document.getElementById('clientsView');
+        if (defaultView) {
+            defaultView.classList.remove('active');
+            defaultView.style.display = 'none';
+            console.log('Default clientsView hidden');
+        }
+
         // Show client intake form (skip normal app initialization)
+        console.log('Calling showClientIntakeForm...');
         await showClientIntakeForm(clientToken);
+        console.log('showClientIntakeForm completed');
+        
+        // Prevent any further initialization
         return; // Don't continue with normal app initialization
     }
+    
+    // Set flag for normal app mode
+    window.isIntakeFormMode = false;
 
     // Normal app initialization (not an intake form link)
     // Wait for Supabase library to load

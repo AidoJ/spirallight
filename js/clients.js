@@ -10,6 +10,12 @@ let currentClientId = null;
  * Load all clients from Supabase
  */
 async function loadClients() {
+    // Don't load clients if we're in intake form mode
+    if (window.isIntakeFormMode) {
+        console.log('loadClients blocked - intake form mode active');
+        return;
+    }
+    
     const clientList = document.getElementById('clientList');
     if (!clientList) return;
 

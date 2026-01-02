@@ -114,6 +114,12 @@ function getInitials(name) {
  * View Management
  */
 function showView(viewName) {
+    // Don't allow view changes if we're in intake form mode
+    if (window.isIntakeFormMode) {
+        console.log('View change blocked - intake form mode active');
+        return;
+    }
+    
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
 

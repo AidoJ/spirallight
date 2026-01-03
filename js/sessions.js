@@ -390,9 +390,7 @@ async function viewSession(id) {
             `;
         }
 
-        // Display other sections similarly...
-        // (I'll add the rest of the display logic, but keeping it concise for now)
-
+        // Display Pain & Injury Details
         if (session.aggravates || session.swelling || session.injury_site) {
             html += `
                 <div class="form-section">
@@ -405,12 +403,12 @@ async function viewSession(id) {
                         </div>` : ''}
                         ${session.swelling ? `
                         <div class="detail-row">
-                            <div class="detail-label">Swelling</div>
+                            <div class="detail-label">Are you experiencing any swelling? Where?</div>
                             <div class="detail-value">${escapeHtml(session.swelling)}</div>
                         </div>` : ''}
                         ${session.injury_site ? `
                         <div class="detail-row">
-                            <div class="detail-label">Injury Site</div>
+                            <div class="detail-label">Indicate injury site and areas of pain</div>
                             <div class="detail-value">${escapeHtml(session.injury_site)}</div>
                         </div>` : ''}
                     </div>
@@ -418,14 +416,219 @@ async function viewSession(id) {
             `;
         }
 
+        // Display Medications
+        if (session.medications && session.medications.length > 0 && session.medications.some(m => m.medication)) {
+            html += `
+                <div class="form-section">
+                    <h3 class="section-header">Medications</h3>
+                    <div class="detail-card">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Medication</th>
+                                    <th>Since?</th>
+                                    <th>Adverse Effects?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${session.medications.filter(m => m.medication).map(m => `
+                                    <tr>
+                                        <td>${escapeHtml(m.medication || '-')}</td>
+                                        <td>${escapeHtml(m.since || '-')}</td>
+                                        <td>${escapeHtml(m.effects || '-')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display Healthcare Providers
+        if (session.healthcare && session.healthcare.length > 0 && session.healthcare.some(h => h.provider)) {
+            html += `
+                <div class="form-section">
+                    <h3 class="section-header">Current Healthcare</h3>
+                    <div class="detail-card">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Healthcare Provider</th>
+                                    <th>For (Condition)</th>
+                                    <th>Treatment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${session.healthcare.filter(h => h.provider).map(h => `
+                                    <tr>
+                                        <td>${escapeHtml(h.provider || '-')}</td>
+                                        <td>${escapeHtml(h.condition || '-')}</td>
+                                        <td>${escapeHtml(h.treatment || '-')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display Therapies
+        if (session.therapies && session.therapies.length > 0 && session.therapies.some(t => t.therapy)) {
+            html += `
+                <div class="form-section">
+                    <h3 class="section-header">Current Therapy/Treatment</h3>
+                    <div class="detail-card">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Therapy Type</th>
+                                    <th>Since?</th>
+                                    <th>Results?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${session.therapies.filter(t => t.therapy).map(t => `
+                                    <tr>
+                                        <td>${escapeHtml(t.therapy || '-')}</td>
+                                        <td>${escapeHtml(t.since || '-')}</td>
+                                        <td>${escapeHtml(t.results || '-')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display Medical History
+        if (session.implants || (session.injuries && session.injuries.length > 0) || (session.operations && session.operations.length > 0)) {
+            html += `
+                <div class="form-section">
+                    <h3 class="section-header">Medical History</h3>
+                    <div class="detail-card">
+                        ${session.implants ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Do you have a pacemaker or any implants including orthotics?</div>
+                            <div class="detail-value">${escapeHtml(session.implants)}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Display Injuries
+            if (session.injuries && session.injuries.length > 0 && session.injuries.some(i => i.injury)) {
+                html += `
+                    <div class="form-section">
+                        <h3 class="section-header">Other Injuries/Conditions</h3>
+                        <div class="detail-card">
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Injury or Condition</th>
+                                        <th>Since?</th>
+                                        <th>Complications?</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${session.injuries.filter(i => i.injury).map(i => `
+                                        <tr>
+                                            <td>${escapeHtml(i.injury || '-')}</td>
+                                            <td>${escapeHtml(i.since || '-')}</td>
+                                            <td>${escapeHtml(i.complications || '-')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Display Operations
+            if (session.operations && session.operations.length > 0 && session.operations.some(o => o.operation)) {
+                html += `
+                    <div class="form-section">
+                        <h3 class="section-header">Operations</h3>
+                        <div class="detail-card">
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Operation Type</th>
+                                        <th>When?</th>
+                                        <th>Complications?</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${session.operations.filter(o => o.operation).map(o => `
+                                        <tr>
+                                            <td>${escapeHtml(o.operation || '-')}</td>
+                                            <td>${escapeHtml(o.when || '-')}</td>
+                                            <td>${escapeHtml(o.complications || '-')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Display Lifestyle
+        if (session.exercise || session.bowen_history || session.additional) {
+            html += `
+                <div class="form-section">
+                    <h3 class="section-header">Lifestyle & Additional Information</h3>
+                    <div class="detail-card">
+                        ${session.exercise ? `
+                        <div class="detail-row">
+                            <div class="detail-label">What exercise(s) do you do, how much, and how often?</div>
+                            <div class="detail-value">${escapeHtml(session.exercise)}</div>
+                        </div>` : ''}
+                        ${session.bowen_history ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Have you been treated with Bowen before?</div>
+                            <div class="detail-value">${escapeHtml(session.bowen_history)}</div>
+                        </div>` : ''}
+                        ${session.additional ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Is there anything you would like to add?</div>
+                            <div class="detail-value">${escapeHtml(session.additional)}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display Therapist Notes (if any)
         if (session.notes) {
             html += `
-                <div class="notes-section">
-                    <div class="notes-header">
-                        <h3>Session Notes</h3>
-                        <button class="btn btn-outline" onclick="editCurrentSession()">Edit</button>
+                <div class="form-section">
+                    <h3 class="section-header">Therapist Notes</h3>
+                    <div class="detail-card">
+                        <div class="detail-row">
+                            <div class="detail-value">${escapeHtml(session.notes)}</div>
+                        </div>
                     </div>
-                    <div class="notes-content">${escapeHtml(session.notes)}</div>
+                </div>
+            `;
+        }
+
+        // Add approve/reject buttons for pending sessions
+        if (session.status === 'pending') {
+            html += `
+                <div class="form-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border);">
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button class="btn btn-primary" onclick="approveSession('${session.id}')" style="padding: 0.75rem 2rem;">
+                            ✓ Approve Session
+                        </button>
+                        <button class="btn btn-danger" onclick="deletePendingSession('${session.id}')" style="padding: 0.75rem 2rem;">
+                            ✕ Reject & Delete
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -647,8 +850,16 @@ async function approveSession(sessionId) {
         }
 
         showToast('Session approved!', 'success');
+        
+        // Refresh the client view to update pending sessions list
         if (currentClientId) {
             await viewClient(currentClientId);
+        } else {
+            // If we're viewing the session directly, go back to client view
+            const { data: session } = await SessionService.getById(sessionId);
+            if (session && session.client_id) {
+                await viewClient(session.client_id);
+            }
         }
     } catch (error) {
         console.error('Error approving session:', error);

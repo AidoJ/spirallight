@@ -306,6 +306,116 @@ function resetSessionForm() {
     addTherapyRow();
     addInjuryRow();
     addOperationRow();
+
+    // Clear therapist signature
+    clearTherapistSignature();
+    
+    // Initialize therapist signature canvas if not already done
+    if (!window.therapistSignatureInitialized) {
+        initTherapistSignatureCanvas();
+        window.therapistSignatureInitialized = true;
+    }
+}
+
+/**
+ * Initialize therapist signature canvas
+ */
+function initTherapistSignatureCanvas() {
+    const canvas = document.getElementById('sessionTherapistSignature');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    // Set canvas size
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 150;
+
+    // Set drawing style
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Mouse events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    // Touch events for mobile
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        startDrawing({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
+    });
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        draw({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
+    });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function startDrawing(e) {
+        isDrawing = true;
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+        
+        // Save signature data
+        const input = document.getElementById('sessionTherapistSignatureData');
+        if (input) input.value = canvas.toDataURL('image/png');
+    }
+
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            const input = document.getElementById('sessionTherapistSignatureData');
+            if (input) input.value = canvas.toDataURL('image/png');
+        }
+    }
+}
+
+/**
+ * Clear therapist signature
+ */
+function clearTherapistSignature() {
+    const canvas = document.getElementById('sessionTherapistSignature');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const input = document.getElementById('sessionTherapistSignatureData');
+    if (input) input.value = '';
+}
+
+/**
+ * Load signature image to canvas
+ */
+function loadSignatureToCanvas(canvasId, signatureData) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || !signatureData) return;
+    
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+    };
+    img.src = signatureData;
 }
 
 /**
@@ -818,7 +928,28 @@ async function editCurrentSession() {
         document.getElementById('sessionBowenHistory').value = session.bowen_history || '';
         document.getElementById('sessionAdditional').value = session.additional || '';
         document.getElementById('sessionNotes').value = session.notes || '';
-
+        
+        // Load therapist signature if exists
+        if (session.therapist_signature) {
+            const input = document.getElementById('sessionTherapistSignatureData');
+            if (input) input.value = session.therapist_signature;
+        } else {
+            clearTherapistSignature();
+        }
+        
+        // Initialize therapist signature canvas if not already done
+        if (!window.therapistSignatureInitialized) {
+            initTherapistSignatureCanvas();
+            window.therapistSignatureInitialized = true;
+        }
+        
+        // Load signature to canvas after a brief delay to ensure canvas is ready
+        if (session.therapist_signature) {
+            setTimeout(() => {
+                loadSignatureToCanvas('sessionTherapistSignature', session.therapist_signature);
+            }, 100);
+        }
+        
         // Set table data
         setTableData('complaintsTable', session.complaints || [], 'complaintsBody');
         setTableData('medicationsTable', session.medications || [], 'medicationsBody');

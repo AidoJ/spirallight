@@ -1135,6 +1135,22 @@
                                     <textarea class="form-textarea" id="sessionNotes" rows="6" placeholder="Treatment notes, observations, recommendations, follow-up plans..."></textarea>
                                 </div>
                             </div>
+
+                            <div class="form-section">
+                                <h3 class="section-header">Therapist Signature</h3>
+                                <div class="detail-card">
+                                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+                                        Please sign below to confirm this session.
+                                    </p>
+                                    <div style="border: 2px solid var(--border); border-radius: 8px; background: white; position: relative;">
+                                        <canvas id="sessionTherapistSignature" width="600" height="150" style="display: block; width: 100%; max-width: 600px; height: 150px; cursor: crosshair; touch-action: none;"></canvas>
+                                        <input type="hidden" id="sessionTherapistSignatureData">
+                                    </div>
+                                    <button type="button" class="btn btn-ghost" onclick="clearTherapistSignature()" style="margin-top: 0.5rem;">
+                                        Clear Signature
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
@@ -1380,6 +1396,22 @@
                                     By submitting this form, I confirm that the information provided is accurate and complete to the best of my knowledge.
                                     I understand this information will be reviewed by my therapist before my appointment.
                                 </p>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="section-header">Client Signature</h3>
+                                <div class="detail-card">
+                                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+                                        Please sign below to confirm the accuracy of the information provided.
+                                    </p>
+                                    <div style="border: 2px solid var(--border); border-radius: 8px; background: white; position: relative;">
+                                        <canvas id="intakeClientSignature" width="600" height="150" style="display: block; width: 100%; max-width: 600px; height: 150px; cursor: crosshair; touch-action: none;"></canvas>
+                                        <input type="hidden" id="intakeClientSignatureData">
+                                    </div>
+                                    <button type="button" class="btn btn-ghost" onclick="clearClientSignature()" style="margin-top: 0.5rem;">
+                                        Clear Signature
+                                    </button>
+                                </div>
                             </div>
 
                             <div style="text-align: center;">

@@ -75,6 +75,9 @@ async function showClientIntakeForm(clientId) {
         // Initialize intake form tables
         resetIntakeForm();
         
+        // Initialize signature canvas
+        initClientSignatureCanvas();
+        
         // Show form, hide success message
         const form = document.getElementById('clientIntakeForm');
         const successMsg = document.getElementById('intakeSuccessMessage');
@@ -129,7 +132,8 @@ async function submitClientIntake(e) {
             exercise: document.getElementById('intakeExercise').value || null,
             bowenHistory: document.getElementById('intakeBowenHistory').value || null,
             additional: document.getElementById('intakeAdditional').value || null,
-            notes: null
+            notes: null,
+            clientSignature: document.getElementById('intakeClientSignatureData').value || null
         };
 
         // Save to database
@@ -380,4 +384,87 @@ function removeIntakeTableRow(btn) {
         // Clear the last row instead of removing it
         row.querySelectorAll('input').forEach(input => input.value = '');
     }
+}
+
+/**
+ * Initialize client signature canvas
+ */
+function initClientSignatureCanvas() {
+    const canvas = document.getElementById('intakeClientSignature');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    // Set canvas size
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = 150;
+
+    // Set drawing style
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Mouse events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    // Touch events for mobile
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        startDrawing({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
+    });
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        draw({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
+    });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function startDrawing(e) {
+        isDrawing = true;
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+        
+        // Save signature data
+        document.getElementById('intakeClientSignatureData').value = canvas.toDataURL('image/png');
+    }
+
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            document.getElementById('intakeClientSignatureData').value = canvas.toDataURL('image/png');
+        }
+    }
+}
+
+/**
+ * Clear client signature
+ */
+function clearClientSignature() {
+    const canvas = document.getElementById('intakeClientSignature');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('intakeClientSignatureData').value = '';
 }

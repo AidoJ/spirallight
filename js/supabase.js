@@ -368,7 +368,9 @@ const SessionService = {
                 exercise: sessionData.exercise || null,
                 bowen_history: sessionData.bowenHistory || null,
                 additional: sessionData.additional || null,
-                notes: sessionData.notes || null
+                notes: sessionData.notes || null,
+                client_signature: sessionData.clientSignature || null,
+                therapist_signature: sessionData.therapistSignature || null
             };
 
             const { data, error } = await supabaseClient

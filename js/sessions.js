@@ -60,7 +60,8 @@ async function saveSession(e) {
             exercise: document.getElementById('sessionExercise').value || null,
             bowenHistory: document.getElementById('sessionBowenHistory').value || null,
             additional: document.getElementById('sessionAdditional').value || null,
-            notes: document.getElementById('sessionNotes').value || null
+            notes: document.getElementById('sessionNotes').value || null,
+            therapistSignature: document.getElementById('sessionTherapistSignatureData')?.value || null
         };
 
         let result;
@@ -612,6 +613,33 @@ async function viewSession(id) {
                         <div class="detail-row">
                             <div class="detail-value">${escapeHtml(session.notes)}</div>
                         </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display Signatures
+        if (session.client_signature || session.therapist_signature) {
+            html += `
+                <div class="form-section">
+                    <h3 class="section-header">Signatures</h3>
+                    <div class="detail-card">
+                        ${session.client_signature ? `
+                        <div style="margin-bottom: 2rem;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">Client Signature</div>
+                            <div style="border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: white;">
+                                <img src="${session.client_signature}" alt="Client Signature" style="max-width: 100%; height: auto; display: block;">
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">Signed: ${formatDateTime(session.created_at)}</div>
+                        </div>` : ''}
+                        ${session.therapist_signature ? `
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">Therapist Signature</div>
+                            <div style="border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: white;">
+                                <img src="${session.therapist_signature}" alt="Therapist Signature" style="max-width: 100%; height: auto; display: block;">
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">Signed: ${formatDateTime(session.updated_at)}</div>
+                        </div>` : ''}
                     </div>
                 </div>
             `;

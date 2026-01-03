@@ -871,24 +871,30 @@ async function approveSession(sessionId) {
  * Delete a pending session
  */
 async function deletePendingSession(sessionId) {
-    if (!confirm('Are you sure you want to delete this pending session?')) {
+    if (!confirm('Are you sure you want to delete this pending session? This action cannot be undone.')) {
         return;
     }
 
     try {
+        // Get session info before deleting to know which client to refresh
+        const { data: session } = await SessionService.getById(sessionId);
+        const clientId = session?.client_id || currentClientId;
+
         const { error } = await SessionService.delete(sessionId);
 
         if (error) {
             throw error;
         }
 
-        showToast('Session deleted!', 'success');
-        if (currentClientId) {
-            await viewClient(currentClientId);
+        showToast('Pending session deleted!', 'success');
+        
+        // Refresh the client view to update pending sessions list
+        if (clientId) {
+            await viewClient(clientId);
         }
     } catch (error) {
-        console.error('Error deleting session:', error);
-        showToast('Failed to delete session', 'error');
+        console.error('Error deleting pending session:', error);
+        showToast('Failed to delete pending session', 'error');
     }
 }
 
